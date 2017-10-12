@@ -1,16 +1,14 @@
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
-const winston = require('winston')
 
+const Prototype = require('./services/Prototype')
 const services = require('./services')
 const getDirFiles = require('./lib/getDirFiles')()
 
-class KoaLa {
+class KoaLa extends Prototype {
   constructor (config) {
+    super()
     this.config = config
-    this.logInfo = winston.info
-    this.logError = winston.error
-
     this.setUpApp()
 
     this.middleware = {}
