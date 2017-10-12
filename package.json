@@ -1,0 +1,27 @@
+{
+  "name": "nemrod",
+  "version": "1.0.0",
+  "description": "Upoluj okazję",
+  "main": "index.js",
+  "dependencies": {
+    "jsdom": "^11.3.0",
+    "koa": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.2.1",
+    "lodash.flatten": "^4.4.0",
+    "winston": "^2.3.1",
+    "xml2js-parser": "^1.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1",
+    "standard": "*"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "debug": "nodemon --inspect-brk server/index.js",
+    "lint": "standard --fix"
+  },
+  "author": "k4wo",
+  "license": "MIT"
+}
