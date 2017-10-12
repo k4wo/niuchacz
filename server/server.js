@@ -53,7 +53,9 @@ class KoaLa {
   async loadServices () {
     this.logInfo('Loading services...')
     await this.loadAndAssign('../services', this.services)
+
     this.app.context.services = this.services
+    this.app.context.mongo = await this.services.Mongo()(this)
   }
 
   async loadAndAssign (path, assignTo) {

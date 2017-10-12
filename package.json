@@ -9,6 +9,7 @@
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.2.1",
     "lodash.flatten": "^4.4.0",
+    "mongodb": "^2.2.32",
     "winston": "^2.3.1",
     "xml2js-parser": "^1.1.1"
   },
