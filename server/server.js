@@ -13,6 +13,7 @@ class KoaLa {
     this.setUpApp()
 
     this.middleware = {}
+    this.services = {}
     this.server = {}
   }
 
@@ -51,7 +52,8 @@ class KoaLa {
 
   async loadServices () {
     this.logInfo('Loading services...')
-    await this.loadAndAssign('../services', this.app.context)
+    await this.loadAndAssign('../services', this.services)
+    this.app.context.services = this.services
   }
 
   async loadAndAssign (path, assignTo) {
