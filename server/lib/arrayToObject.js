@@ -7,7 +7,8 @@ module.exports = arr => {
 
   const _arr = _flatten(arr)
   const converted = {}
-  for (let i = 0; i < arr.length; i + 2) {
+
+  for (let i = 0; i < _arr.length; i += 2) {
     converted[_arr[i]] = _arr[i + 1]
   }
 
