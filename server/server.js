@@ -2,6 +2,7 @@ const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const winston = require('winston')
 
+const services = require('./services')
 const getDirFiles = require('./lib/getDirFiles')()
 
 class KoaLa {
@@ -52,10 +53,10 @@ class KoaLa {
 
   async loadServices () {
     this.logInfo('Loading services...')
-    await this.loadAndAssign('../services', this.services)
+    this.services = await services()(this)
 
     this.app.context.services = this.services
-    this.app.context.mongo = await this.services.Mongo()(this)
+    this.app.context.mongo = await this.services.mongo
   }
 
   async loadAndAssign (path, assignTo) {
