@@ -1,9 +1,7 @@
 const urlParser = require('url')
 const { JSDOM } = require('jsdom')
 
-const Prototype = require('../Prototype')
-
-class Scraper extends Prototype {
+class Scraper {
   static isValidUrl (str) {
     var pattern = new RegExp('^(https?:\/\/)?' + // protocol
       '((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|' + // domain name
@@ -21,7 +19,6 @@ class Scraper extends Prototype {
   }
 
   constructor (htmlString) {
-    super()
     const { window } = new JSDOM(htmlString)
     this.html = window.document
   }

@@ -2,11 +2,8 @@ const urlParser = require('url')
 const http = require('http')
 const https = require('https')
 
-const Prototype = require('./Prototype')
-
-class Fetch extends Prototype {
+class Fetch {
   constructor () {
-    super()
     this.contentType = 'text/html'
   }
 

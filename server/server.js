@@ -1,13 +1,14 @@
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
+const winston = require('winston')
 
-const Prototype = require('./services/Prototype')
 const services = require('./services')
 const getDirFiles = require('./lib/getDirFiles')()
 
-class KoaLa extends Prototype {
+class KoaLa {
   constructor (config) {
-    super()
+    this.logInfo = winston.info
+    this.logError = winston.error
     this.config = config
     this.setUpApp()
 
@@ -27,10 +28,14 @@ class KoaLa extends Prototype {
   async init () {
     this.logInfo('Booting...')
 
-    await this.loadMiddlewares()
-    await this.loadServices()
-    await this.loadRoutes()
-    await this.start()
+    try {
+      await this.loadMiddlewares()
+      await this.loadServices()
+      await this.loadRoutes()
+      await this.start()
+    } catch (error) {
+      this.logError(error)
+    }
   }
 
   async loadRoutes () {
