@@ -4,6 +4,10 @@ const sliceString = require('../../lib/sliceString')
 const Scraper = require('./scraper')
 
 class Rzeszowiak extends Scraper {
+  static getPageId (url) {
+    return url.replace(/\D+/g, '')
+  }
+
   static prepareSubscriptionUrl (url) {
     if (!Scraper.isValidUrl(url)) {
       return ''
@@ -15,7 +19,7 @@ class Rzeszowiak extends Scraper {
     // next one sort type
     // next 2 offers per page
     // last one show offers from last x days
-    const pageId = parsedUrl.pathname.replace(/\D+/g, '')
+    const pageId = Rzeszowiak.getPageId(parsedUrl.pathname)
     // change number of offers per page to max (99)
     const newPageId = sliceString(pageId, 7, 2, 99)
     const pathname = parsedUrl.pathname.replace(pageId, newPageId)
@@ -33,7 +37,7 @@ class Rzeszowiak extends Scraper {
   }
 
   static getPageNo (url) {
-    return +url.substr(-7, 3)
+    return +Rzeszowiak.getPageId(url).substr(-7, 3)
   }
 
   isMoreData (url) {
