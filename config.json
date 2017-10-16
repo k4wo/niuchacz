@@ -4,5 +4,11 @@
     "port": "27017",
     "database": "test",
     "password": ""
+  },
+  "mysql": {
+    "host": "127.0.0.1",
+    "user": "test",
+    "database": "test",
+    "password": ""
   }
 }

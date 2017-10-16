@@ -5,11 +5,13 @@
   "main": "index.js",
   "dependencies": {
     "jsdom": "^11.3.0",
+    "knex": "^0.13.0",
     "koa": "^2.3.0",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.2.1",
     "lodash.flatten": "^4.4.0",
     "mongodb": "^2.2.32",
+    "mysql": "^2.15.0",
     "winston": "^2.3.1",
     "xml2js-parser": "^1.1.1"
   },
