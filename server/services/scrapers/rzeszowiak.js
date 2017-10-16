@@ -32,6 +32,20 @@ class Rzeszowiak extends Scraper {
     return url.replace(currentPageId, nextPageId)
   }
 
+  static getPageNo (url) {
+    return +url.substr(-7, 3)
+  }
+
+  isMoreData (url) {
+    const pagesInfo = this.$('#oDnns').textContent
+    const splittedPages = pagesInfo.split(' ')
+
+    const lastPage = +splittedPages[splittedPages.length - 1]
+    const currentPage = Rzeszowiak.getPageNo(url)
+
+    return currentPage < lastPage
+  }
+
   buildOffer () {
     const map = this.getCoordinates()
     const description = this.getDescription()
