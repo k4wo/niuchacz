@@ -28,10 +28,11 @@ class Rzeszowiak extends Scraper {
   }
 
   static nextPage (url) {
-    const currentPageId = url.substr(-10, 10)
-    const currentPageNo = +currentPageId.substr(3, 3)
+    const currentPageId = Rzeszowiak.getPageId(url)
+    const currentPageNo = Rzeszowiak.getPageNo(url)
     const nextPageNo = currentPageNo + 1
-    const nextPageId = sliceString(currentPageId, 3, 3, nextPageNo)
+    const nextPageFormatted = `00${nextPageNo}`.substr(-3)
+    const nextPageId = sliceString(currentPageId, 3, 3, nextPageFormatted)
 
     return url.replace(currentPageId, nextPageId)
   }
