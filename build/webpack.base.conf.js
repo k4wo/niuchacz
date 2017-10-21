@@ -45,7 +45,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        include: [resolve('src/view'), resolve('test')]
+        include: [resolve('src/view'), resolve('test'), resolve('node_modules/vue-awesome')]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
