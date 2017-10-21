@@ -5,17 +5,15 @@
       :selectedCategory="selectedCategory" 
       @update:selectedCategory="changeCategory">
     </Categories>
-    <Icon name="plus-circle" class="add"></Icon>
+    <AddObserver></AddObserver>
     <Offers v-bind:offers="offers"></Offers>
   </div>
 </template>
 
 <script>
-import "vue-awesome/icons/plus-circle";
-import Icon from "vue-awesome/components/Icon";
-
 import Offers from "./Offers.vue";
 import Categories from "./Categories.vue";
+import AddObserver from "./AddObserver.vue";
 
 export default {
   methods: {
@@ -48,7 +46,7 @@ export default {
   components: {
     Offers,
     Categories,
-    Icon
+    AddObserver
   },
   beforeMount() {
     this.changeCategory(this.categories[0]);
@@ -65,21 +63,8 @@ ul {
   list-style-type: none;
   padding: 0;
 }
-
 li {
   display: inline-block;
   margin: 0 10px;
-}
-.add {
-  margin-left: 10%;
-  margin-top: 10px;
-  width: 3em;
-  height: 3em;
-  color: #36495e;
-  border-radius: 50%;
-}
-.add:hover {
-  box-shadow: 0 0 5px #41b984;
-  cursor: pointer;
 }
 </style>
