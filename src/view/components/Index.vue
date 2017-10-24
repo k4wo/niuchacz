@@ -5,7 +5,9 @@
       :selectedCategory="selectedCategory" 
       @update:selectedCategory="changeCategory">
     </Categories>
-    <AddObserver></AddObserver>
+    <AddObserver 
+      v-bind:categoryName="selectedCategory.name"
+      :saveObserver="saveObserver"></AddObserver>
     <Offers v-bind:offers="offers"></Offers>
   </div>
 </template>
@@ -17,10 +19,13 @@ import AddObserver from "./AddObserver.vue";
 
 export default {
   methods: {
-    changeCategory: function(category) {
+    changeCategory(category) {
       const { name } = category;
       this.selectedCategory = category;
       this.offers = this.allOffers[name] || [];
+    },
+    saveObserver(data) {
+      fetch("add-observer", { method: "POST", body: JSON.stringify(data) });
     }
   },
   data() {
