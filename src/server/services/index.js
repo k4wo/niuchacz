@@ -1,11 +1,12 @@
-const Mongo = require('./db/mongo')()
+const { Mongo, ObjectID } = require('./db/mongo')
 const Mysql = require('./db/mysql')
 const Fetch = require('./Fetch')
 const Rzeszowiak = require('./scrapers/rzeszowiak')
 const Observer = require('./Observer')
 
 module.exports = app => async app => ({
-  mongo: await Mongo(app),
+  mongo: await Mongo()(app),
+  mongoId: ObjectID,
   mysql: Mysql(app),
   fetch: new Fetch(),
   Rzeszowiak,
