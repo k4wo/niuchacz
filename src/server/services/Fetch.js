@@ -1,4 +1,4 @@
-const { URL } = require('url')
+const URL = require('url')
 const http = require('http')
 const https = require('https')
 const { Iconv } = require('iconv')
@@ -55,7 +55,7 @@ const makeRequest = ({request}, options) => {
 
 const fetch = async (request) => {
   const reqOptions = typeof request === 'string' ? { url: request } : request
-  const { protocol, hostname, pathname: path } = new URL(reqOptions.url)
+  const { protocol, hostname, path } = URL.parse(reqOptions.url)
   const fetcher = protocol === 'https:' ? https : http
 
   const options = Object.assign(_options, reqOptions, { hostname, path })
