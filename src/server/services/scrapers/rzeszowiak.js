@@ -22,7 +22,7 @@ class Rzeszowiak extends Scraper {
     const pageId = Rzeszowiak.getPageId(parsedUrl.pathname)
     // change number of offers per page to max (99)
     const newPageId = sliceString(pageId, 7, 2, 99)
-    const pathname = parsedUrl.pathname.replace(pageId, newPageId)
+    const pathname = parsedUrl.path.replace(pageId, newPageId)
 
     return `${parsedUrl.protocol || 'http:'}//${parsedUrl.hostname}${pathname}`
   }
@@ -96,7 +96,7 @@ class Rzeszowiak extends Scraper {
       .slice(startIndex, endIndex + startIndex)
       .filter(detail => detail.children.length > 1)
       .map(details => Array.from(details.children).slice(0, -1))
-      .map(details => details.map(detail => detail.textContent.split(':')[0].trim()))
+      .map(details => details.map(detail => detail.textContent.split(':')[0].trim().replace('.', '')))
 
     return ArrayToObject(additionalInfo)
   }
@@ -107,7 +107,9 @@ class Rzeszowiak extends Scraper {
     }
 
     return Object.keys(rawInfo)
-      .reduce((store, key) => Object.assign(store, { [key]: rawInfo[key].children[1].textContent }), {})
+      .reduce((store, key) => Object.assign(
+        store, { [key]: rawInfo[key].children[1].textContent }),
+      {})
   }
 
   getOffersUrl () {
