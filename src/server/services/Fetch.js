@@ -1,78 +1,70 @@
-const urlParser = require('url')
+const { URL } = require('url')
 const http = require('http')
 const https = require('https')
 const { Iconv } = require('iconv')
 
-class Fetch {
-  constructor () {
-    this.contentType = 'text/html'
-  }
-
-  fetch (url) {
-    const fetcher = this.getFetcher(url)
-    return new Promise((resolve, reject) => {
-      fetcher.get(url, res => this.consumeBody(res, resolve, reject))
-        .on('err', err => reject(err))
-    })
-  }
-
-  async get (url) {
-    if (typeof url !== 'string') {
-      return ''
-    }
-
-    try {
-      const response = await this.fetch(url)
-      if (typeof response !== 'string' && response.statusCode === 301) {
-        return this.get(response.url)
-      }
-
-      return response
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  consumeBody (response, resolve, reject) {
-    const { statusCode } = response
-    const [contentType] = response.headers['content-type'].split(';')
-    const errors = []
-
-    if (statusCode === 301) {
-      response.resume()
-      return resolve({ statusCode, url: response.headers.location })
-    } else if (statusCode !== 200) {
-      const error = new Error(`Response returned code: ${statusCode}`)
-      errors.push(error)
-    }
-
-    if (contentType !== this.contentType) {
-      const error = new Error(`Wrong content type. Expected is ${this.contentType}, given is ${contentType}`)
-      errors.push(error)
-    }
-
-    if (errors.length) {
-      response.resume()
-      return reject(new Error(errors.toString()))
-    }
-
-    let rawData = ''
-    response
-      .setEncoding('binary')
-      .on('data', chunk => { rawData += chunk })
-      .on('end', () => {
-        const body = Buffer.alloc(rawData.length, rawData, 'binary')
-        const text = new Iconv('latin2', 'utf8')
-        resolve(
-          text.convert(body).toString()
-        )
-      })
-  }
-
-  getFetcher (url) {
-    const { protocol } = urlParser.parse(url)
-    return protocol === 'https:' ? https : http
-  }
+const _options = {
+  method: 'GET'
 }
 
-module.exports = Fetch
+const makeRequest = ({request}, options) => {
+  return new Promise((resolve, reject) => {
+    request(options, response => {
+      const { statusCode } = response
+      const [contentType, charset] = response.headers['content-type'].split(';')
+      const errors = []
+
+      if (statusCode === 301) {
+        response.resume()
+        return resolve({ statusCode, url: response.headers.location })
+      } else if (statusCode !== 200) {
+        const error = new Error(`Response returned code: ${statusCode}`)
+        errors.push(error)
+      }
+
+      if (options.contentType && options.contentType !== contentType.trim()) {
+        const msg = `Incorrect content type. Expected is ${options.contentType}, given is ${contentType}`
+        const error = new Error(msg)
+        errors.push(error)
+      }
+
+      if (errors.length) {
+        response.resume()
+        return reject(new Error(errors.toString()))
+      }
+
+      let rawData = ''
+      response
+        .setEncoding('binary')
+        .on('data', chunk => { rawData += chunk })
+        .on('end', () => {
+          const encoding = options.encoding || (charset && charset.trim())
+          if (encoding && !encoding.toUpperCase().includes('UTF-8')) {
+            const body = Buffer.alloc(rawData.length, rawData, 'binary')
+            const text = new Iconv(encoding, 'utf8')
+            rawData = text.convert(body).toString()
+          }
+
+          resolve(rawData)
+        })
+    })
+      .on('error', err => reject(err))
+      .end()
+  })
+}
+
+const fetch = async (request) => {
+  const reqOptions = typeof request === 'string' ? { url: request } : request
+  const { protocol, hostname, pathname: path } = new URL(reqOptions.url)
+  const fetcher = protocol === 'https:' ? https : http
+
+  const options = Object.assign(_options, reqOptions, { hostname, path })
+  const response = await makeRequest(fetcher, options)
+  if (typeof response !== 'string' && response.statusCode === 301) {
+    return fetch(request)
+  }
+
+  return response
+}
+
+module.exports = () => fetch
