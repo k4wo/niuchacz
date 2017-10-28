@@ -1,6 +1,7 @@
 const urlParser = require('url')
 const http = require('http')
 const https = require('https')
+const { Iconv } = require('iconv')
 
 class Fetch {
   constructor () {
@@ -28,7 +29,7 @@ class Fetch {
 
       return response
     } catch (error) {
-      this.logError(error)
+      console.log(error)
     }
   }
 
@@ -57,9 +58,15 @@ class Fetch {
 
     let rawData = ''
     response
-      .setEncoding('utf8')
+      .setEncoding('binary')
       .on('data', chunk => { rawData += chunk })
-      .on('end', () => resolve(rawData))
+      .on('end', () => {
+        const body = Buffer.alloc(rawData.length, rawData, 'binary')
+        const text = new Iconv('latin2', 'utf8')
+        resolve(
+          text.convert(body).toString()
+        )
+      })
   }
 
   getFetcher (url) {

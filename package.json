@@ -4,6 +4,7 @@
   "description": "Upoluj okazję",
   "main": "index.js",
   "dependencies": {
+    "iconv": "^2.3.0",
     "jsdom": "^11.3.0",
     "knex": "^0.13.0",
     "koa": "^2.3.0",
