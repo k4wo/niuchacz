@@ -38,33 +38,34 @@ class Observer {
   }
 
   async fetchOffers () {
-    try {
-      const html = await this.services.fetch.get(this.currentUrl)
-      const scraper = new this.Scraper(html)
-      const fetchedOffersId = scraper.getOffersUrl()
-      const newOffersId = this.compareOffers(fetchedOffersId)
-      const isMoreData = scraper.isMoreData(this.currentUrl)
+    const html = await this.services.fetch(this.currentUrl)
+    const scraper = new this.Scraper(html)
+    const fetchedOffersId = scraper.getOffersUrl()
+    const newOffersId = this.compareOffers(fetchedOffersId)
+    const isMoreData = scraper.isMoreData(this.currentUrl)
 
-      this.newOffersId = [...this.newOffersId, ...newOffersId]
-      if (isMoreData && (!fetchedOffersId.length || fetchedOffersId.length === newOffersId.length)) {
-        this.setNextPage()
-        await this.fetchOffers()
-      }
-    } catch (error) {
-      this.logError(error)
+    this.newOffersId = [...this.newOffersId, ...newOffersId]
+    if (isMoreData && (!fetchedOffersId.length || fetchedOffersId.length === newOffersId.length)) {
+      this.setNextPage()
+      await this.fetchOffers()
     }
   }
 
-  async gatherOfferDetails () {
+  async gatherOfferDetails (serviceId) {
     for (const url of this.newOffersId) {
-      const html = await this.services.fetch.get(url)
+      const html = await this.services.fetch({ url, encoding: 'latin2' })
       const Scraper = new this.Scraper(html)
       const details = Scraper.buildOffer()
 
-      this.newOffers.push(Object.assign(details, { url }))
+      this.newOffers.push(Object.assign(details, { url, serviceId }))
     }
 
     return this.newOffers
+  }
+
+  async observe (serviceId) {
+    await this.fetchOffers()
+    return this.gatherOfferDetails(serviceId)
   }
 }
 
