@@ -10,14 +10,21 @@
       </div>
 
       <div class="offer" @click="toggleDescription">
-        <span>description here</span>
+        <span>{{offer.description}}</span>
+        <span>{{offer.cena}}</span>
       </div>
 
       <div class="icon" @click="openInNewWindow">
         <Icon name="external-link"></Icon>
       </div>
     </div>
-    <div class="description" v-if="showFullDescription">full showFullDescription</div>
+    <div class="description" v-if="showFullDescription">
+      <div v-for="detail in details" :key="detail.name">
+        <span>{{detail.name}}: </span>
+        <span>{{detail.value}}</span>
+      </div>
+      <div>{{this.offer.description}}</div>
+    </div>
   </li>
 </template>
 
@@ -32,6 +39,14 @@ export default {
     offer: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    details() {
+      const offer = Object.assign({}, this.offer);
+      ['description', '_id', 'map', 'url'].forEach(key => delete offer[key])
+
+      return Object.keys(offer).map(key => ({ name: key, value: offer[key] }));
     }
   },
   data() {
