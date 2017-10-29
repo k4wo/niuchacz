@@ -41,7 +41,20 @@ export default {
       selectedCategory: {},
       allOffers: {
         działki: [
-          { id: 1, isFavourite: false },
+          {
+            _id: "59f4d690a2466d0e09222257",
+            map: null,
+            description:
+              "Sprzedam działkę położoną w Malawie-Zagóra od strony Słociny, ok 1km od ulicy Świętego Rocha, o powierzchni 25 arów, media: gaz, prąd, kanalizacja na działce i wodociąg w pobliżu. Dla działki zostały wydane dwie decyzje o warunkach zabudowy. Idealne miejsce pod dom jednorodzinny lub zabudowę letniskową. Dojazd do działki bezpośrednio z drogi asfaltowej gminnej (droga utwardzona), w doskonałej lokalizacji w otoczeniu domów jednorodzinnych. Lokalizacja działki zapewnia cisze i spokój. Szybki dojazd do Rzeszowa.  Działka widokowa, atrakcyjny widok w stronę miasta. Teren w żaden sposób nie jest zagrożony zalaniem wodą. Więcej szczegółowych informacji pod numerem tel.886779533. Cena do uzgodnienia! Zapraszam!",
+            powierzchnia: "25 ar",
+            "cena za ar": "5 200 zl",
+            media: "prąd, gaz, kanalizacja,",
+            polożenie: "Malawa",
+            cena: "130000 PLN",
+            url:
+              "http://www.rzeszowiak.pl/sprzedam-dzialke-polozona-w-malawie-zagora-od-strony-slociny-8723608",
+            serviceId: 14
+          },
           { isMarkedAsRead: false, id: 2, isFavourite: true }
         ],
         samochody: []
@@ -62,7 +75,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .index {
-  width: 100%;
+  display: grid;
+  grid-template-columns: 15% 70% 15%;
+  grid-template-rows: 120px auto;
 }
 ul {
   list-style-type: none;

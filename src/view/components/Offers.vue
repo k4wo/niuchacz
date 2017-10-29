@@ -23,7 +23,7 @@ export default {
 
 <style scoped>
 ul {
-  width: 80%;
-  margin: 20px auto;
+  grid-column: 2 / 3;
+  grid-row: 2 / 3
 }
 </style>

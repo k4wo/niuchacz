@@ -10,8 +10,8 @@
       </div>
 
       <div class="offer" @click="toggleDescription">
-        <span>{{offer.description}}</span>
-        <span>{{offer.cena}}</span>
+        <span>{{offer.description.substr(0, 70)}}...</span>
+        <span class="price">{{offer.cena}}</span>
       </div>
 
       <div class="icon" @click="openInNewWindow">
@@ -91,6 +91,14 @@ export default {
   width: 100%;
   background: rgb(247, 247, 247);
 }
+.price {
+  background: #41b984;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 14px;
+}
 .description {
   margin-top: 1px;
   width: 100%;
@@ -117,6 +125,7 @@ export default {
 }
 .offer {
   display: flex;
+  justify-content: space-between;
   width: 100%;
   margin: auto 20px;
   cursor: pointer;

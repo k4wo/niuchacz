@@ -30,9 +30,13 @@ export default {
 </script>
 <style scoped>
 .categories {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
-  margin: 20px 0;
+  justify-self: center;
+  align-self: center;
+  grid-column: 2 / 3;
 }
 .category {
   display: inline-block;

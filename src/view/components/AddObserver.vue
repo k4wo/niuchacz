@@ -55,11 +55,14 @@ export default {
 
 <style scoped>
 .add {
-  position: absolute;
-  display: inline-block;
-  width: 50px;
-  margin-left: 10%;
-  margin-top: 10px;
+  display: flex;
+  justify-content: start;
+  align-items: end;
+  position: relative;
+
+  grid-column-start: 3;
+  justify-self: start;
+  align-self: end;
 }
 .icon {
   width: 3em;
@@ -74,7 +77,9 @@ export default {
   cursor: pointer;
 }
 .container {
-  position: relative;
+  position: absolute;
+  right: -70px;
+  top: 60px;
   width: 200px;
   z-index: 1;
   padding: 10px;
