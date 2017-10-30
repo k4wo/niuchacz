@@ -108,7 +108,7 @@ class Rzeszowiak extends Scraper {
 
     return Object.keys(rawInfo)
       .reduce((store, key) => Object.assign(
-        store, { [key]: rawInfo[key].children[1].textContent }),
+        store, { [key]: parseInt(rawInfo[key].children[1].textContent) }),
       {})
   }
 
