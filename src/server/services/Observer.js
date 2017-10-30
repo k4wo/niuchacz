@@ -6,7 +6,7 @@ class Observer {
     this.services = app.services
     this.serviceId = url
     this.currentUrl = url
-    this.existingOffersId = existingOffersId
+    this.existingOffersId = existingOffersId.map(offer => offer.url)
 
     this.newOffersId = []
     this.newOffers = []
@@ -31,17 +31,15 @@ class Observer {
     this.currentUrl = this.Scraper.nextPage(this.currentUrl)
   }
 
-  compareOffers (fetchedOffersId) {
-    // keep in mind returned offersId can be in DB already because
-    // `this.existingOffersId` doesn't contain all offers
-    return fetchedOffersId.filter(offerId => !this.existingOffersId.includes(offerId))
+  getNewOffers (fetchedOffersId) {
+    return fetchedOffersId.filter(offerUrl => !this.existingOffersId.includes(offerUrl))
   }
 
   async fetchOffers () {
     const html = await this.services.fetch(this.currentUrl)
     const scraper = new this.Scraper(html)
     const fetchedOffersId = scraper.getOffersUrl()
-    const newOffersId = this.compareOffers(fetchedOffersId)
+    const newOffersId = this.getNewOffers(fetchedOffersId)
     const isMoreData = scraper.isMoreData(this.currentUrl)
 
     this.newOffersId = [...this.newOffersId, ...newOffersId]
@@ -55,9 +53,10 @@ class Observer {
     for (const url of this.newOffersId) {
       const html = await this.services.fetch({ url, encoding: 'latin2' })
       const Scraper = new this.Scraper(html)
-      const details = Scraper.buildOffer()
+      const body = Scraper.buildOffer()
+      const insertDate = +new Date()
 
-      this.newOffers.push(Object.assign(details, { url, serviceId }))
+      this.newOffers.push(Object.assign({}, { body, url, serviceId, insertDate }))
     }
 
     return this.newOffers
