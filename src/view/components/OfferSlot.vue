@@ -1,20 +1,18 @@
 <template>
   <li class="slot">
-    <div class="details" :class="{ 'mark-as-read': offer.isMarkedAsRead }">
-      <div class="mark">
-        <label><input type="checkbox" v-model="offer.isMarkedAsRead"></label>
-        <div class="icon" @click="toggleFavourite">
-          <Icon v-if="!offer.isFavourite" name="heart-o"></Icon>
-          <Icon v-if="offer.isFavourite" name="heart"></Icon>
-        </div>
+    <div class="details" :class="{ 'mark-as-read': offer.markAsRead }">
+      <label class="icon-container">
+        <input type="checkbox" v-model="offer.markAsRead">
+      </label>
+      <div class="icon-container border-right" @click="toggleFavourite">
+        <Icon v-if="!isFavourite" name="heart-o"></Icon>
+        <Icon v-if="isFavourite" name="heart"></Icon>
       </div>
 
-      <div class="offer" @click="toggleDescription">
-        <span>{{offer.description.substr(0, 70)}}...</span>
-        <span class="price">{{offer.cena}}</span>
-      </div>
+      <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
+      <span class="price" @click="toggleDescription">{{offer.body.cena}}</span>
 
-      <div class="icon" @click="openInNewWindow">
+      <div class="icon-container" @click="openInNewWindow">
         <Icon name="external-link"></Icon>
       </div>
     </div>
@@ -23,7 +21,8 @@
         <span>{{detail.name}}: </span>
         <span>{{detail.value}}</span>
       </div>
-      <div>{{this.offer.description}}</div>
+
+      <div>{{offer.body.description}}</div>
     </div>
   </li>
 </template>
@@ -39,14 +38,19 @@ export default {
     offer: {
       type: Object,
       required: true
-    }
+    },
+    saveAsRead: Function,
+    saveAsFavourite: Function
   },
   computed: {
     details() {
-      const offer = Object.assign({}, this.offer);
-      ['description', '_id', 'map', 'url'].forEach(key => delete offer[key])
+      const offer = Object.assign({}, this.offer.body);
+      ["description", "map"].forEach(key => delete offer[key]);
 
       return Object.keys(offer).map(key => ({ name: key, value: offer[key] }));
+    },
+    isFavourite() {
+      return !!this.offer.markAsFavourite;
     }
   },
   data() {
@@ -55,18 +59,22 @@ export default {
     };
   },
   methods: {
-    markedAsRead() {
-      this.offer.isMarkedAsRead = true;
+    markAsRead() {
+      if (!this.offer.markAsRead) {
+        this.saveAsRead(this.offer._id);
+      }
+      this.offer.markAsRead = true;
     },
     toggleFavourite() {
-      this.offer.isFavourite = !this.offer.isFavourite;
+      this.$set(this.offer, 'markAsFavourite', !this.offer.markAsFavourite)
+      this.saveAsFavourite(this.offer._id, this.offer.markAsFavourite);
     },
     toggleDescription() {
       this.showFullDescription = !this.showFullDescription;
-      this.markedAsRead();
+      this.markAsRead();
     },
     openInNewWindow() {
-      this.markedAsRead();
+      this.markAsRead();
       window.open(this.offer.url, "_blank");
     }
   },
@@ -78,18 +86,15 @@ export default {
 
 <style scoped>
 .slot {
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: space-between;
-  align-items: center;
   color: #616161;
   margin: 1px;
   position: relative;
 }
 .details {
   display: flex;
-  width: 100%;
+  align-items: center;
   background: rgb(247, 247, 247);
+  cursor: pointer;
 }
 .price {
   background: #41b984;
@@ -98,6 +103,14 @@ export default {
   border-radius: 5px;
   font-weight: 600;
   font-size: 14px;
+  margin: 0 10px;
+}
+.spoiler {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 90%;
+  margin: 0 10px;
 }
 .description {
   margin-top: 1px;
@@ -110,33 +123,18 @@ export default {
 .mark-as-read {
   opacity: 0.5;
 }
-.mark {
-  display: flex;
-  align-items: center;
-  border-right: 1px solid #fff;
-}
-.icon,
-.mark label {
+.icon-container {
   height: 35px;
   width: 35px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.offer {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  margin: auto 20px;
-  cursor: pointer;
-}
-.icon {
-  border-left: 1px solid #fff;
-}
-.star:hover,
-.mark label:hover,
-.icon:hover {
+.icon-container:hover {
   background: #eaeaea;
   cursor: pointer;
+}
+.border-right {
+  border-right: 1px solid #fff;
 }
 </style>

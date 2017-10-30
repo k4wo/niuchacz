@@ -1,6 +1,12 @@
 <template>
   <ul>
-    <offerslot v-for="offer in offers" :key="offer.id" v-bind:offer="offer"></offerslot>
+    <offerslot 
+      v-for="offer in offers" 
+      :key="offer.id" 
+      v-bind:offer="offer"
+      :saveAsRead="saveAsRead"
+      :saveAsFavourite="saveAsFavourite">
+    </offerslot>
     <li v-if="!offers.length">Brak ofert w tej kategorii</li>
   </ul>
 </template>
@@ -10,10 +16,9 @@ import offerslot from "./OfferSlot.vue";
 
 export default {
   props: {
-    offers: {
-      type: Array,
-      required: true
-    }
+    offers: Array,
+    saveAsRead: Function,
+    saveAsFavourite: Function,
   },
   components: {
     offerslot

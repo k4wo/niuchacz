@@ -8,7 +8,10 @@
     <AddObserver 
       v-bind:categoryName="selectedCategory.name"
       :saveObserver="saveObserver"></AddObserver>
-    <Offers v-bind:offers="offers"></Offers>
+    <Offers 
+      v-bind:offers="offers"
+      :saveAsRead="saveAsRead"
+      :saveAsFavourite="saveAsFavourite"></Offers>
   </div>
 </template>
 
@@ -25,40 +28,32 @@ export default {
       this.offers = this.allOffers[name] || [];
     },
     saveObserver(data) {
-      fetch("add-observer", { method: "POST", body: JSON.stringify(data) });
+      fetch("/niuchacz/add", {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        },
+        method: "POST",
+        body: JSON.stringify(data)
+      });
+    },
+    saveAsRead(id) {
+      fetch(`/offer/markasread/${id}`, { method: "POST" });
+    },
+    saveAsFavourite(id, isFavourite) {
+      const path = `/offer/markasfavourite/${id}`
+      const url = isFavourite
+        ? path
+        : `${path}/remove`;
+      fetch(url, { method: "POST" });
     }
   },
   data() {
     return {
       offers: [],
-      categories: [
-        { id: 1, name: "działki" },
-        { id: 532, name: "samochody" },
-        { id: 923, name: "szybkowary" },
-        { id: 7310, name: "samochody" },
-        { id: 3943, name: "Inne" }
-      ],
+      categories: [],
       selectedCategory: {},
-      allOffers: {
-        działki: [
-          {
-            _id: "59f4d690a2466d0e09222257",
-            map: null,
-            description:
-              "Sprzedam działkę położoną w Malawie-Zagóra od strony Słociny, ok 1km od ulicy Świętego Rocha, o powierzchni 25 arów, media: gaz, prąd, kanalizacja na działce i wodociąg w pobliżu. Dla działki zostały wydane dwie decyzje o warunkach zabudowy. Idealne miejsce pod dom jednorodzinny lub zabudowę letniskową. Dojazd do działki bezpośrednio z drogi asfaltowej gminnej (droga utwardzona), w doskonałej lokalizacji w otoczeniu domów jednorodzinnych. Lokalizacja działki zapewnia cisze i spokój. Szybki dojazd do Rzeszowa.  Działka widokowa, atrakcyjny widok w stronę miasta. Teren w żaden sposób nie jest zagrożony zalaniem wodą. Więcej szczegółowych informacji pod numerem tel.886779533. Cena do uzgodnienia! Zapraszam!",
-            powierzchnia: "25 ar",
-            "cena za ar": "5 200 zl",
-            media: "prąd, gaz, kanalizacja,",
-            polożenie: "Malawa",
-            cena: "130000 PLN",
-            url:
-              "http://www.rzeszowiak.pl/sprzedam-dzialke-polozona-w-malawie-zagora-od-strony-slociny-8723608",
-            serviceId: 14
-          },
-          { isMarkedAsRead: false, id: 2, isFavourite: true }
-        ],
-        samochody: []
-      }
+      allOffers: {}
     };
   },
   components: {
@@ -66,8 +61,23 @@ export default {
     Categories,
     AddObserver
   },
-  beforeMount() {
-    this.changeCategory(this.categories[0]);
+  async beforeMount() {
+    try {
+      const categoriesResponse = await fetch("/niuchacz");
+      const categories = await categoriesResponse.json();
+
+      const [selectedCategory] = categories;
+      const offersResponse = await fetch(
+        `/offer/${selectedCategory.servicesId.toString()}`
+      );
+      const { offers } = await offersResponse.json();
+
+      this.categories = categories;
+      this.allOffers[selectedCategory.name] = offers;
+      this.changeCategory(selectedCategory);
+    } catch (error) {
+      console.log(error);
+    }
   }
 };
 </script>
