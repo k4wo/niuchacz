@@ -1,6 +1,6 @@
 var Router = require('koa-router')
 
-const markAs = async (ctx, key) => {
+const markAs = async (ctx, key, value) => {
   const { mongo, mongoId } = ctx.services
   const { offerId } = ctx.params
 
@@ -8,7 +8,7 @@ const markAs = async (ctx, key) => {
     const offer = mongoId(offerId)
     await mongo('personalized').update(
       { offer },
-      { $set: { [key]: true, offer } },
+      { $set: { [key]: value, offer } },
       { upsert: true }
     )
 
@@ -18,6 +18,24 @@ const markAs = async (ctx, key) => {
     ctx.throw(500)
   }
 }
+
+const mergeMarkAsValues = offers => offers.reduce((newCollection, offer) => {
+  if (!offer.marked[0]) {
+    return [...newCollection, offer]
+  }
+
+  if (offer.marked[0].markAsRead) {
+    return newCollection
+  }
+
+  const [marked] = offer.marked
+  delete offer.marked
+  const markAs = Object.keys(marked).reduce((values, key) => (
+    ['_id', 'offer'].includes(key) ? values : Object.assign({}, values, { [key]: marked[key] })
+  ), {})
+
+  return [...newCollection, Object.assign({}, offer, markAs)]
+}, [])
 
 module.exports = ({ app, middleware }) => {
   var router = new Router({
@@ -34,7 +52,7 @@ module.exports = ({ app, middleware }) => {
         { $match: { serviceId: { $in: find } } },
         { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } }
       ]).toArray()
-      const offers = rawOffers.filter(offer => !offer.marked[0] || !offer.marked[0].markAsRead)
+      const offers = mergeMarkAsValues(rawOffers)
 
       ctx.body = JSON.stringify({ offers })
     } catch (error) {
@@ -43,9 +61,10 @@ module.exports = ({ app, middleware }) => {
     }
   })
 
-  router.post('/markasread/:offerId', ctx => markAs(ctx, 'markAsRead'))
+  router.post('/markasread/:offerId', ctx => markAs(ctx, 'markAsRead', true))
 
-  router.post('/markasfavourite/:offerId', ctx => markAs(ctx, 'markAsFavourite'))
+  router.post('/markasfavourite/:offerId', ctx => markAs(ctx, 'markAsFavourite', true))
+  router.post('/markasfavourite/:offerId/remove', ctx => markAs(ctx, 'markAsFavourite', false))
 
   app.use(router.routes())
   app.use(router.allowedMethods())
