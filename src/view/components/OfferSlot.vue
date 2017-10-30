@@ -5,8 +5,8 @@
         <input type="checkbox" v-model="offer.markAsRead">
       </label>
       <div class="icon-container border-right" @click="toggleFavourite">
-        <Icon v-if="!isFavourite" name="heart-o"></Icon>
-        <Icon v-if="isFavourite" name="heart"></Icon>
+        <Icon v-if="!this.offer.markAsFavourite" name="heart-o"></Icon>
+        <Icon v-if="this.offer.markAsFavourite" name="heart"></Icon>
       </div>
 
       <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
@@ -48,9 +48,6 @@ export default {
       ["description", "map"].forEach(key => delete offer[key]);
 
       return Object.keys(offer).map(key => ({ name: key, value: offer[key] }));
-    },
-    isFavourite() {
-      return !!this.offer.markAsFavourite;
     }
   },
   data() {
