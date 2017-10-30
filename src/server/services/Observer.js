@@ -37,7 +37,7 @@ class Observer {
 
   async fetchOffers () {
     const html = await this.services.fetch(this.currentUrl)
-    const scraper = new this.Scraper(html)
+    const scraper = new this.Scraper(html.data)
     const fetchedOffersId = scraper.getOffersUrl()
     const newOffersId = this.getNewOffers(fetchedOffersId)
     const isMoreData = scraper.isMoreData(this.currentUrl)
@@ -51,7 +51,9 @@ class Observer {
 
   async gatherOfferDetails (serviceId) {
     for (const url of this.newOffersId) {
-      const html = await this.services.fetch({ url, encoding: 'latin2' })
+      const response = await this.services.fetch(url)
+      const html = this.services.textEncoder(response.data, 'latin2')
+
       const Scraper = new this.Scraper(html)
       const body = Scraper.buildOffer()
       const insertDate = +new Date()
