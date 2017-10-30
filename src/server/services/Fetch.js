@@ -1,22 +1,21 @@
 const URL = require('url')
 const http = require('http')
 const https = require('https')
-const { Iconv } = require('iconv')
 
 const _options = {
   method: 'GET'
 }
 
-const makeRequest = ({request}, options) => {
+const makeRequest = ({ request }, options) => {
   return new Promise((resolve, reject) => {
     request(options, response => {
       const { statusCode } = response
-      const [contentType, charset] = response.headers['content-type'].split(';')
+      const [contentType] = response.headers['content-type'].split(';')
       const errors = []
 
       if (statusCode === 301) {
         response.resume()
-        return resolve({ statusCode, url: response.headers.location })
+        return fetch(Object.assign({}, options, { url: response.headers.location }))
       } else if (statusCode !== 200) {
         const error = new Error(`Response returned code: ${statusCode}`)
         errors.push(error)
@@ -37,16 +36,7 @@ const makeRequest = ({request}, options) => {
       response
         .setEncoding('binary')
         .on('data', chunk => { rawData += chunk })
-        .on('end', () => {
-          const encoding = options.encoding || (charset && charset.trim())
-          if (encoding && !encoding.toUpperCase().includes('UTF-8')) {
-            const body = Buffer.alloc(rawData.length, rawData, 'binary')
-            const text = new Iconv(encoding, 'utf8')
-            rawData = text.convert(body).toString()
-          }
-
-          resolve(rawData)
-        })
+        .on('end', () => resolve({ data: rawData, headers: response.headers }))
     })
       .on('error', err => reject(err))
       .end()
@@ -60,9 +50,6 @@ const fetch = async (request) => {
 
   const options = Object.assign(_options, reqOptions, { hostname, path })
   const response = await makeRequest(fetcher, options)
-  if (typeof response !== 'string' && response.statusCode === 301) {
-    return fetch(request)
-  }
 
   return response
 }
