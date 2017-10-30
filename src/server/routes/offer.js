@@ -30,7 +30,11 @@ module.exports = ({ app, middleware }) => {
     const find = servicesId.split(',').map(id => +id)
 
     try {
-      const offers = await mongo('offers').find({ serviceId: { $in: find } }).toArray()
+      const rawOffers = await mongo('offers').aggregate([
+        { $match: { serviceId: { $in: find } } },
+        { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } }
+      ]).toArray()
+      const offers = rawOffers.filter(offer => !offer.marked[0] || !offer.marked[0].markAsRead)
 
       ctx.body = JSON.stringify({ offers })
     } catch (error) {
