@@ -5,9 +5,10 @@ const markAs = async (ctx, key) => {
   const { offerId } = ctx.params
 
   try {
+    const offer = mongoId(offerId)
     await mongo('personalized').update(
-      { offer: mongoId(offerId) },
-      { $set: { [key]: true, offer: mongoId(offerId) } },
+      { offer },
+      { $set: { [key]: true, offer } },
       { upsert: true }
     )
 
@@ -23,19 +24,15 @@ module.exports = ({ app, middleware }) => {
     prefix: '/offer'
   })
 
-  router.get('/:bundleId', async ctx => {
-    const { mongo, mongoId } = ctx.services
-    const { bundleId } = ctx.params
+  router.get('/:servicesId', async ctx => {
+    const { mongo } = ctx.services
+    const { servicesId } = ctx.params
+    const find = servicesId.split(',').map(id => +id)
 
     try {
-      const offers = await mongo('bundles').aggregate([
-        { $match: { _id: mongoId(bundleId) } },
-        { $lookup: { from: 'offers', localField: '_id', foreignField: 'bundle', as: 'offer' } },
-        { $project: { offer: 1 } }
-      ]).toArray()
+      const offers = await mongo('offers').find({ serviceId: { $in: find } }).toArray()
 
-      const toSend = offers.map(item => item.offer)
-      ctx.body = JSON.stringify({ offers: toSend })
+      ctx.body = JSON.stringify({ offers })
     } catch (error) {
       ctx.logError(error)
       ctx.throw(500, 'Nie mozna pobrac Niuchaczy.')
