@@ -8,6 +8,7 @@ module.exports = ({ app, middleware }) => {
   })
 
   app.use(serveStatic(pathJoin(__dirname, '../../../dist')))
+  app.use(serveStatic(pathJoin(__dirname, '../../../temp')))
   app.use(router.routes())
   app.use(router.allowedMethods())
 }

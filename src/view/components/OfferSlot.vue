@@ -17,11 +17,22 @@
       </div>
     </div>
     <div class="description" v-if="showFullDescription">
-      <div v-for="detail in details" :key="detail.name">
-        <span>{{detail.name}}: </span>
-        <span>{{detail.value}}</span>
-      </div>
+      <div class="description-details">
+        <div>
+          <div v-for="detail in details" :key="detail.name">
+            <span>{{detail.name}}: </span>
+            <span>{{detail.value}}</span>
+          </div>
+        </div>
 
+        <div v-if="showTelNo">
+          <img :src="telNoUrl" />
+        </div>
+        <div
+          v-if="!showTelNo"
+          @click="toggleTelNo"
+          class="show-phone-no">Pokaz telefon</div>
+      </div>
       <div>{{offer.body.description}}</div>
     </div>
   </li>
@@ -44,15 +55,20 @@ export default {
   },
   computed: {
     details() {
+      this.offer.body.offerId && console.log(this.offer.body);
       const offer = Object.assign({}, this.offer.body);
-      ["description", "map"].forEach(key => delete offer[key]);
+      ["description", "map", "offerId"].forEach(key => delete offer[key]);
 
       return Object.keys(offer).map(key => ({ name: key, value: offer[key] }));
+    },
+    telNoUrl() {
+      return `${this.offer.body.offerId}.jpeg`;
     }
   },
   data() {
     return {
-      showFullDescription: false
+      showFullDescription: false,
+      showTelNo: false
     };
   },
   methods: {
@@ -63,7 +79,7 @@ export default {
       this.offer.markAsRead = true;
     },
     toggleFavourite() {
-      this.$set(this.offer, 'markAsFavourite', !this.offer.markAsFavourite)
+      this.$set(this.offer, "markAsFavourite", !this.offer.markAsFavourite);
       this.saveAsFavourite(this.offer._id, this.offer.markAsFavourite);
     },
     toggleDescription() {
@@ -73,6 +89,9 @@ export default {
     openInNewWindow() {
       this.markAsRead();
       window.open(this.offer.url, "_blank");
+    },
+    toggleTelNo() {
+      this.showTelNo = !this.showTelNo;
     }
   },
   components: {
@@ -116,6 +135,15 @@ export default {
   background: rgb(237, 237, 237);
   padding: 10px 20px;
   box-sizing: border-box;
+}
+.description-details {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0 30px 0;
+  font-size: 14px;
+}
+.show-phone-no {
+  cursor: pointer;
 }
 .mark-as-read {
   opacity: 0.5;
