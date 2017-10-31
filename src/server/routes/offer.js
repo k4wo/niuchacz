@@ -50,7 +50,8 @@ module.exports = ({ app, middleware }) => {
     try {
       const rawOffers = await mongo('offers').aggregate([
         { $match: { serviceId: { $in: find } } },
-        { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } }
+        { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } },
+        { $sort: { insertDate: -1 } }
       ]).toArray()
       const offers = mergeMarkAsValues(rawOffers)
 
