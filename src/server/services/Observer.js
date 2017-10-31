@@ -19,7 +19,7 @@ class Observer {
 
     switch (parsedUrl.hostname) {
       case 'www.rzeszowiak.pl':
-        this.Scraper = this.services.Rzeszowiak
+        this.Scraper = this.services.rzeszowiak
         break
 
       default:
@@ -37,7 +37,7 @@ class Observer {
 
   async fetchOffers () {
     const html = await this.services.fetch(this.currentUrl)
-    const scraper = new this.Scraper(html.data)
+    const scraper = this.Scraper(html.data)
     const fetchedOffersId = scraper.getOffersUrl()
     const newOffersId = this.getNewOffers(fetchedOffersId)
     const isMoreData = scraper.isMoreData(this.currentUrl)
@@ -50,11 +50,18 @@ class Observer {
   }
 
   async gatherOfferDetails (serviceId) {
+    const cookie = []
+    const setCookie = (headers) => {
+      headers['set-cookie'].forEach((c, i) => (cookie[i] = c))
+      headers['set-cookie'] = cookie
+    }
+
     for (const url of this.newOffersId) {
       const response = await this.services.fetch(url)
       const html = this.services.textEncoder(response.data, 'latin2')
+      setCookie(response.headers)
 
-      const Scraper = new this.Scraper(html)
+      const Scraper = this.Scraper(html, response.headers)
       const body = Scraper.buildOffer()
       const insertDate = +new Date()
 

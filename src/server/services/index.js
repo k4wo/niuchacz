@@ -12,5 +12,5 @@ module.exports = app => async app => ({
   observer: (url, existingOffersId) => new Observer(url, existingOffersId, app),
   fetch,
   textEncoder,
-  Rzeszowiak
+  rzeszowiak: (html, headers) => new Rzeszowiak(app, html, headers)
 })

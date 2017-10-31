@@ -1,7 +1,8 @@
-
 const ArrayToObject = require('../../lib/arrayToObject')
 const sliceString = require('../../lib/sliceString')
 const Scraper = require('./scraper')
+const formUrlData = require('../../lib/parseUrlencoded')
+const writeFile = require('../../lib/writeFile')
 
 class Rzeszowiak extends Scraper {
   static getPageId (url) {
@@ -39,6 +40,12 @@ class Rzeszowiak extends Scraper {
 
   static getPageNo (url) {
     return +Rzeszowiak.getPageId(url).substr(-7, 3)
+  }
+
+  constructor (app, html, headers) {
+    super(html)
+    this.app = app
+    this.headers = headers
   }
 
   isMoreData (url) {
@@ -102,18 +109,56 @@ class Rzeszowiak extends Scraper {
   }
 
   getBasicInfo (elements) {
-    const rawInfo = {
-      cena: elements.find(detail => this.findDetail(detail, 'cena'))
+    const _rawPrice = elements.find(detail => this.findDetail(detail, 'cena'))
+
+    this.getPhoneNumber()
+    return {
+      cena: parseInt(_rawPrice.children[1].textContent),
+      offerId: this.getOfferId()
+    }
+  }
+
+  async getPhoneNumber () {
+    const { fetch } = this.app.services
+    const url = 'http://www.rzeszowiak.pl/telefon/'
+    const telElement = this.$('#tel a')
+
+    if (!telElement) {
+      return
     }
 
-    return Object.keys(rawInfo)
-      .reduce((store, key) => Object.assign(
-        store, { [key]: parseInt(rawInfo[key].children[1].textContent) }),
-      {})
+    const relAttribute = telElement.getAttribute('rel')
+    const [oid, ssid] = relAttribute.split('|')
+    const data = { oid, ssid }
+    const headers = Object.assign(
+      {},
+      formUrlData(data), {
+        'Cookie': this.headers['set-cookie'][1].split(';')[0].trim()
+      }
+    )
+
+    try {
+      const response = await fetch({ method: 'POST', url, headers, data })
+      const offerId = this.getOfferId()
+      const base64 = response.data.split(',')[1]
+      const blob = Buffer.alloc(base64.length, base64, 'base64')
+
+      const fileName = `${offerId}.jpeg`
+      const filePath = `./../../../temp/${fileName}`
+      await writeFile(filePath, blob)
+
+      return offerId
+    } catch (error) {
+      this.app.logError(error)
+    }
   }
 
   getOffersUrl () {
     return this.$$('.normalbox .normalbox-title-left a').map(el => el.href)
+  }
+
+  getOfferId () {
+    return this.$('.box-header').textContent.split('#')[1].trim()
   }
 }
 
