@@ -26,26 +26,13 @@ const makeRequest = ({ request }, options) => {
   return new Promise((resolve, reject) => {
     const req = request(options, response => {
       const { statusCode } = response
-      const [contentType] = response.headers['content-type'].split(';')
-      const errors = []
 
       if (statusCode === 301) {
         response.resume()
         return fetch(Object.assign({}, options, { url: response.headers.location }))
-      } else if (statusCode !== 200) {
-        const error = new Error(`Response returned code: ${statusCode}`)
-        errors.push(error)
-      }
-
-      if (options.contentType && options.contentType !== contentType.trim()) {
-        const msg = `Incorrect content type. Expected is ${options.contentType}, given is ${contentType}`
-        const error = new Error(msg)
-        errors.push(error)
-      }
-
-      if (errors.length) {
+      } else if (statusCode >= 400) {
         response.resume()
-        return reject(new Error(errors.toString()))
+        return reject(new Error(`Response returned code: ${statusCode}`))
       }
 
       let rawData = ''
