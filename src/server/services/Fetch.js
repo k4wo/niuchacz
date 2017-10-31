@@ -1,3 +1,4 @@
+const querystring = require('querystring')
 const URL = require('url')
 const http = require('http')
 const https = require('https')
@@ -6,9 +7,24 @@ const _options = {
   method: 'GET'
 }
 
+const preparePostData = ({ headers, data }) => {
+  if (!data || !headers) {
+    return ''
+  }
+
+  const contentType = headers['Content-Type']
+  if (contentType.includes('x-www-form-urlencoded')) {
+    return querystring.stringify(data)
+  } else if (typeof data === 'object') {
+    return JSON.stringify(data)
+  }
+
+  return data
+}
+
 const makeRequest = ({ request }, options) => {
   return new Promise((resolve, reject) => {
-    request(options, response => {
+    const req = request(options, response => {
       const { statusCode } = response
       const [contentType] = response.headers['content-type'].split(';')
       const errors = []
@@ -38,8 +54,10 @@ const makeRequest = ({ request }, options) => {
         .on('data', chunk => { rawData += chunk })
         .on('end', () => resolve({ data: rawData, headers: response.headers }))
     })
-      .on('error', err => reject(err))
-      .end()
+
+    req.write(preparePostData(options))
+    req.on('error', err => reject(err))
+    req.end()
   })
 }
 
