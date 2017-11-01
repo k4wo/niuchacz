@@ -2,11 +2,11 @@
   <li class="slot">
     <div class="details" :class="{ 'mark-as-read': offer.markAsRead }">
       <label class="icon-container">
-        <input type="checkbox" v-model="offer.markAsRead">
+        <input type="checkbox" @change="toggleSelection" :checked="offer.markAsRead">
       </label>
       <div class="icon-container border-right" @click="toggleFavourite">
-        <Icon v-if="!this.offer.markAsFavourite" name="heart-o"></Icon>
-        <Icon v-if="this.offer.markAsFavourite" name="heart"></Icon>
+        <Icon v-if="!offer.markAsFavourite" name="heart-o"></Icon>
+        <Icon v-if="offer.markAsFavourite" name="heart"></Icon>
       </div>
 
       <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
@@ -68,15 +68,21 @@ export default {
   data() {
     return {
       showFullDescription: false,
-      showTelNo: false
+      showTelNo: false,
+      wasRead: !!this.offer.markAsRead
     };
   },
   methods: {
-    markAsRead() {
-      if (!this.offer.markAsRead) {
+    setMarkAsRead(isMarked) {
+      if (!this.wasRead) {
+        this.wasRead = true;
         this.saveAsRead(this.offer._id);
       }
-      this.offer.markAsRead = true;
+
+      this.$set(this.offer, "markAsRead", isMarked);
+    },
+    toggleSelection() {
+      this.setMarkAsRead(!this.offer.markAsRead);
     },
     toggleFavourite() {
       this.$set(this.offer, "markAsFavourite", !this.offer.markAsFavourite);
@@ -84,10 +90,10 @@ export default {
     },
     toggleDescription() {
       this.showFullDescription = !this.showFullDescription;
-      this.markAsRead();
+      this.setMarkAsRead(true);
     },
     openInNewWindow() {
-      this.markAsRead();
+      this.setMarkAsRead(true);
       window.open(this.offer.url, "_blank");
     },
     toggleTelNo() {
