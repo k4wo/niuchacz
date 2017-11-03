@@ -10,6 +10,7 @@
       :saveObserver="saveObserver"></AddObserver>
     <Offers 
       v-bind:offers="offers"
+      :showFavourite="showFavourite"
       :saveAsRead="saveAsRead"
       :saveAsFavourite="saveAsFavourite"></Offers>
   </div>
@@ -22,10 +23,10 @@ import AddObserver from "./AddObserver.vue";
 
 export default {
   methods: {
-    changeCategory(category) {
+    changeCategory(category, favouriteOffers) {
       const { name } = category;
       this.selectedCategory = category;
-      this.offers = this.allOffers[name] || [];
+      this.offers = favouriteOffers || this.allOffers[name] || [];
     },
     saveObserver(data) {
       fetch("/niuchacz/add", {
@@ -41,11 +42,13 @@ export default {
       fetch(`/offer/markasread/${id}`, { method: "POST" });
     },
     saveAsFavourite(id, isFavourite) {
-      const path = `/offer/markasfavourite/${id}`
-      const url = isFavourite
-        ? path
-        : `${path}/remove`;
+      const path = `/offer/markasfavourite/${id}`;
+      const url = isFavourite ? path : `${path}/remove`;
       fetch(url, { method: "POST" });
+    },
+    showFavourite(isMarked) {
+      const offers = isMarked ? this.favouriteOffers : null
+      this.changeCategory(this.selectedCategory, offers)
     }
   },
   data() {
@@ -53,7 +56,8 @@ export default {
       offers: [],
       categories: [],
       selectedCategory: {},
-      allOffers: {}
+      allOffers: {},
+      favouriteOffers: []
     };
   },
   components: {
@@ -67,13 +71,18 @@ export default {
       const categories = await categoriesResponse.json();
 
       const [selectedCategory] = categories;
-      const offersResponse = await fetch(
-        `/offer/${selectedCategory.servicesId.toString()}`
-      );
-      const { offers } = await offersResponse.json();
+      const offerUrl = `/offer/${selectedCategory.servicesId.toString()}`;
+      const offersResponse = await Promise.all([
+        fetch(offerUrl),
+        fetch(`${offerUrl}/favourite`)
+      ]);
+
+      const { offers } = await offersResponse[0].json();
+      const favourites = await offersResponse[1].json();
 
       this.categories = categories;
       this.allOffers[selectedCategory.name] = offers;
+      this.favouriteOffers = favourites.offers;
       this.changeCategory(selectedCategory);
     } catch (error) {
       console.log(error);

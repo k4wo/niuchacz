@@ -37,6 +37,18 @@ const mergeMarkAsValues = offers => offers.reduce((newCollection, offer) => {
   return [...newCollection, Object.assign({}, offer, markAs)]
 }, [])
 
+const mergeFavourite = (offers, servicesId) => offers.reduce((newCollection, offer) => {
+  const root = offer.root[0]
+  delete offer.root
+  delete offer.offer
+
+  if (!servicesId.includes(root.serviceId)) {
+    return newCollection
+  }
+
+  return [...newCollection, Object.assign({}, offer, root)]
+}, [])
+
 module.exports = ({ app, middleware }) => {
   var router = new Router({
     prefix: '/offer'
@@ -53,8 +65,27 @@ module.exports = ({ app, middleware }) => {
         { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } },
         { $sort: { insertDate: -1 } }
       ]).toArray()
-      const offers = mergeMarkAsValues(rawOffers)
 
+      const offers = mergeMarkAsValues(rawOffers)
+      ctx.body = JSON.stringify({ offers })
+    } catch (error) {
+      ctx.logError(error)
+      ctx.throw(500, 'Nie mozna pobrac Niuchaczy.')
+    }
+  })
+
+  router.get('/:servicesId/favourite', async ctx => {
+    const { mongo } = ctx.services
+    const { servicesId } = ctx.params
+    const find = servicesId.split(',').map(id => +id)
+
+    try {
+      const rawOffers = await mongo('personalized').aggregate([
+        { $match: { markAsFavourite: true } },
+        { $lookup: { from: 'offers', localField: 'offer', foreignField: '_id', as: 'root' } }
+      ]).toArray()
+
+      const offers = mergeFavourite(rawOffers, find)
       ctx.body = JSON.stringify({ offers })
     } catch (error) {
       ctx.logError(error)
