@@ -12,9 +12,12 @@
       <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
       <span class="price" @click="toggleDescription">{{offer.body.cena}}</span>
 
-      <div class="icon-container" @click="openInNewWindow">
+      <a 
+        class="icon-container link"
+        @click="setMarkAsRead(true)" 
+        :href="offer.url" target="_blank">
         <Icon name="external-link"></Icon>
-      </div>
+      </a>
     </div>
     <div class="description" v-if="showFullDescription">
       <div class="description-details">
@@ -92,10 +95,6 @@ export default {
       this.showFullDescription = !this.showFullDescription;
       this.setMarkAsRead(true);
     },
-    openInNewWindow() {
-      this.setMarkAsRead(true);
-      window.open(this.offer.url, "_blank");
-    },
     toggleTelNo() {
       this.showTelNo = !this.showTelNo;
     }
@@ -126,6 +125,9 @@ export default {
   font-weight: 600;
   font-size: 14px;
   margin: 0 10px;
+}
+.link {
+  color: inherit;
 }
 .spoiler {
   white-space: nowrap;
