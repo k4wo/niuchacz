@@ -19,7 +19,7 @@
         <Icon name="external-link"></Icon>
       </a>
     </div>
-    <div class="description" v-if="showFullDescription">
+    <div class="description-container" v-if="showFullDescription">
       <div class="description-details">
         <div>
           <div v-for="detail in details" :key="detail.name">
@@ -36,7 +36,10 @@
           @click="toggleTelNo"
           class="show-phone-no">Pokaz telefon</div>
       </div>
-      <div>{{offer.body.description}}</div>
+      <div class="description">
+        <div>{{offer.body.description}}</div>
+        <Map :name="offer.body.offerId" :destination="destination"></Map> 
+      </div>
     </div>
   </li>
 </template>
@@ -46,6 +49,7 @@ import "vue-awesome/icons/external-link";
 import "vue-awesome/icons/heart";
 import "vue-awesome/icons/heart-o";
 import Icon from "vue-awesome/components/Icon";
+import Map from "./Map.vue";
 
 export default {
   props: {
@@ -58,7 +62,6 @@ export default {
   },
   computed: {
     details() {
-      this.offer.body.offerId && console.log(this.offer.body);
       const offer = Object.assign({}, this.offer.body);
       ["description", "map", "offerId"].forEach(key => delete offer[key]);
 
@@ -66,6 +69,14 @@ export default {
     },
     telNoUrl() {
       return `${this.offer.body.offerId}.jpeg`;
+    },
+    destination() {
+      const offer = this.offer.body;
+      if (!offer.map) {
+        return `${offer["polożenie"]}, Rzeszów`;
+      }
+
+      return { lat: parseFloat(offer.map[0]), lng: parseFloat(offer.map[1]) };
     }
   },
   data() {
@@ -100,7 +111,8 @@ export default {
     }
   },
   components: {
-    Icon
+    Icon,
+    Map
   }
 };
 </script>
@@ -136,7 +148,7 @@ export default {
   width: 90%;
   margin: 0 10px;
 }
-.description {
+.description-container {
   margin-top: 1px;
   width: 100%;
   min-height: 100px;
@@ -149,6 +161,15 @@ export default {
   justify-content: space-between;
   margin: 10px 0 30px 0;
   font-size: 14px;
+}
+.description {
+  display: flex;
+}
+.description > div {
+  width: 50%;
+}
+.description > div:first-child {
+  margin: 10px 10px 0 0;
 }
 .show-phone-no {
   cursor: pointer;
