@@ -12,6 +12,7 @@
       v-bind:offers="offers"
       :showFavourite="showFavourite"
       :saveAsRead="saveAsRead"
+      :priceFilter="priceFilter"
       :saveAsFavourite="saveAsFavourite"></Offers>
   </div>
 </template>
@@ -23,10 +24,10 @@ import AddObserver from "./AddObserver.vue";
 
 export default {
   methods: {
-    changeCategory(category, favouriteOffers) {
+    changeCategory(category, offers) {
       const { name } = category;
       this.selectedCategory = category;
-      this.offers = favouriteOffers || this.allOffers[name] || [];
+      this.offers = offers || this.allOffers[name] || [];
     },
     saveObserver(data) {
       fetch("/niuchacz/add", {
@@ -47,8 +48,18 @@ export default {
       fetch(url, { method: "POST" });
     },
     showFavourite(isMarked) {
-      const offers = isMarked ? this.favouriteOffers : null
-      this.changeCategory(this.selectedCategory, offers)
+      const offers = isMarked ? this.favouriteOffers : null;
+      this.changeCategory(this.selectedCategory, offers);
+    },
+    priceFilter(filter) {
+      if (!filter) {
+        this.changeCategory(this.selectedCategory, offers);
+        return;
+      }
+
+      const { name: categoryName } = this.selectedCategory;
+      const offers = this.allOffers[categoryName].filter(offer => offer.body.cena > filter);
+      this.changeCategory(this.selectedCategory, offers);
     }
   },
   data() {
