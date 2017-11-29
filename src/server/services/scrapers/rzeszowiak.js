@@ -71,11 +71,12 @@ class Rzeszowiak extends Scraper {
 
   getCoordinates () {
     const mapEl = this.$$('script')[2].textContent
-    if (!mapEl) {
+    const startPos = mapEl.indexOf('LatLng(')
+    if (!mapEl || startPos === -1) {
       return
     }
 
-    return mapEl.substr(mapEl.indexOf('LatLng(')).split('(')[1].split(')')[0].split(',')
+    return mapEl.substr(startPos).split('(')[1].split(')')[0].split(',')
   }
 
   getDescription () {
