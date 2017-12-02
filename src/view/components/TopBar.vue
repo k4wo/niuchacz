@@ -1,20 +1,23 @@
 <template>
-    <li class="top-bar">
-      <label class="selectAll">
-        <input type="checkbox" v-model="checkAll" @change="selectAll"/>
-        <span>Na liście znajduje się {{offerCounter}} ofert.</span>
-      </label>
+  <li class="top-bar">
+    <label class="selectAll">
+      <input type="checkbox" v-model="checkAll" @change="selectAll"/>
+      <span>Na liście znajduje się {{offerCounter}} ofert.</span>
+    </label>
 
+    <div class="buttons">
+      <div><button @click="removeSelectedOffers">Usuń zaznaczone</button></div>
       <price-filter :onSave="priceFilter"></price-filter>
+    </div>
 
-      <label>
-        Pokaż ulubione oferty
-        <input 
-          type="checkbox"
-          v-model="isFavouriteMarked"
-          @change="showFavourite(isFavouriteMarked)"/>
-      </label>
-    </li>
+    <label>
+      Pokaż ulubione oferty
+      <input 
+        type="checkbox"
+        v-model="isFavouriteMarked"
+        @change="showFavourite(isFavouriteMarked)"/>
+    </label>
+  </li>
 </template>
 
 <script>
@@ -26,7 +29,15 @@ export default {
     offerCounter: Number,
     saveAsRead: Function,
     priceFilter: Function,
-    showFavourite: Function
+    showFavourite: Function,
+    removeSelected: Function
+  },
+
+  methods: {
+    removeSelectedOffers() {
+      this.checkAll = false;
+      this.removeSelected();
+    }
   },
 
   data() {
@@ -52,8 +63,14 @@ export default {
   justify-content: space-between;
   position: relative;
 }
-.top-bar label, .selectAll {
+.top-bar label,
+.selectAll {
   cursor: pointer;
+}
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 230px;
 }
 </style>
 

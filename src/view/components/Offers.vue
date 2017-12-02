@@ -1,11 +1,12 @@
 <template>
   <ul>
     <top-bar
-      :offerCounter="offers.length"
+      :selectAll="selectAll"
       :saveAsRead="saveAsRead"
-      :showFavourite="showFavourite"
       :priceFilter="priceFilter"
-      :selectAll="selectAll">
+      :offerCounter="offers.length"
+      :showFavourite="showFavourite"
+      :removeSelected="removeSelected">
     </top-bar>
     <offerslot 
       v-for="offer in offers" 
@@ -25,12 +26,13 @@ export default {
   props: {
     offers: Array,
     saveAsRead: Function,
+    removeSelected: Function,
     saveAsFavourite: Function,
     showFavourite: Function,
     priceFilter: Function
   },
 
-methods: {
+  methods: {
     selectAll() {
       this.offers.forEach(offer => {
         this.$set(offer, "markAsRead", true);

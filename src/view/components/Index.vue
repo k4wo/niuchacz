@@ -7,13 +7,16 @@
     </Categories>
     <AddObserver 
       v-bind:categoryName="selectedCategory.name"
-      :saveObserver="saveObserver"></AddObserver>
+      :saveObserver="saveObserver">
+    </AddObserver>
     <Offers 
       v-bind:offers="offers"
-      :showFavourite="showFavourite"
       :saveAsRead="saveAsRead"
       :priceFilter="priceFilter"
-      :saveAsFavourite="saveAsFavourite"></Offers>
+      :showFavourite="showFavourite"
+      :removeSelected="removeSelected"
+      :saveAsFavourite="saveAsFavourite">
+    </Offers>
   </div>
 </template>
 
@@ -67,6 +70,9 @@ export default {
       );
 
       this.changeCategory(this.selectedCategory, offers);
+    },
+    removeSelected() {
+      this.offers = this.offers.filter(offer => !offer.markAsRead);
     }
   },
   data() {
