@@ -51,14 +51,21 @@ export default {
       const offers = isMarked ? this.favouriteOffers : null;
       this.changeCategory(this.selectedCategory, offers);
     },
-    priceFilter(filter) {
-      if (!filter) {
+    priceFilter(price, filterType) {
+      if (!price) {
         this.changeCategory(this.selectedCategory, offers);
         return;
       }
 
+      const bigger = offer => offer > price;
+      const lower = offer => offer < price;
+      const onFilter = filterType === ">" ? bigger : lower;
+
       const { name: categoryName } = this.selectedCategory;
-      const offers = this.allOffers[categoryName].filter(offer => offer.body.cena > filter);
+      const offers = this.allOffers[categoryName].filter(offer =>
+        onFilter(offer.body.cena)
+      );
+
       this.changeCategory(this.selectedCategory, offers);
     }
   },
