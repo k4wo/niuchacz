@@ -33,6 +33,8 @@ class KoaLa {
       await this.loadServices()
       await this.loadRoutes()
       await this.start()
+
+      setInterval(() => this.watcher(), 1200000)
     } catch (error) {
       this.logError(error)
     }
@@ -80,12 +82,49 @@ class KoaLa {
     }
   }
 
-  async start (port = 6666, host = '127.0.0.1') {
-    this.server = this.app.listen(port, host, () => this.logInfo(`Server is running on ${port}`))
+  async start (port = 7777) {
+    this.server = this.app.listen(port, () => this.logInfo(`Server is running on ${port}`))
   }
 
   async stop () {
     this.server.close()
+  }
+
+  async watcher () {
+    const { mongo, mysql, observer } = this.services
+
+    try {
+      const services = await mysql.select().table('services')
+
+      for (const service of services) {
+        const serviceId = service.id
+        const existingOffers = await mongo('offers')
+          .find({ serviceId })
+          .sort({ insertDate: -1 })
+          .limit(100)
+          .toArray()
+        const watcher = observer(service.url, existingOffers)
+        const newOffers = await watcher.observe(serviceId)
+
+        await this.insertOffers(newOffers)
+      }
+    } catch (error) {
+      this.logError(error)
+    }
+  }
+
+  async insertOffers (offers) {
+    if (!offers.length) {
+      return
+    }
+
+    const mongo = this.services.mongo('offers')
+    for (const offer of offers) {
+      const offerFromDb = await mongo.find({ url: offer.url }).toArray()
+      if (!offerFromDb.length) {
+        mongo.insert(offer)
+      }
+    }
   }
 }
 
