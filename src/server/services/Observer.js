@@ -27,10 +27,6 @@ class Observer {
     }
   }
 
-  setNextPage () {
-    this.currentUrl = this.Scraper.nextPage(this.currentUrl)
-  }
-
   getNewOffers (fetchedOffersId) {
     return fetchedOffersId.filter(offerUrl => !this.existingOffersId.includes(offerUrl))
   }
@@ -44,7 +40,7 @@ class Observer {
 
     this.newOffersId = [...this.newOffersId, ...newOffersId]
     if (isMoreData && (!fetchedOffersId.length || fetchedOffersId.length === newOffersId.length)) {
-      this.setNextPage()
+      this.currentUrl = scraper.nextPage(this.currentUrl)
       await this.fetchOffers()
     }
   }

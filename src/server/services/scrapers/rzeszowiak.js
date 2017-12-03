@@ -28,16 +28,6 @@ class Rzeszowiak extends Scraper {
     return `${parsedUrl.protocol || 'http:'}//${parsedUrl.hostname}${pathname}`
   }
 
-  static nextPage (url) {
-    const currentPageId = Rzeszowiak.getPageId(url)
-    const currentPageNo = Rzeszowiak.getPageNo(url)
-    const nextPageNo = currentPageNo + 1
-    const nextPageFormatted = `00${nextPageNo}`.substr(-3)
-    const nextPageId = sliceString(currentPageId, 3, 3, nextPageFormatted)
-
-    return url.replace(currentPageId, nextPageId)
-  }
-
   static getPageNo (url) {
     return +Rzeszowiak.getPageId(url).substr(-7, 3)
   }
@@ -46,6 +36,16 @@ class Rzeszowiak extends Scraper {
     super(html)
     this.app = app
     this.headers = headers
+  }
+
+  nextPage (url) {
+    const currentPageId = Rzeszowiak.getPageId(url)
+    const currentPageNo = Rzeszowiak.getPageNo(url)
+    const nextPageNo = currentPageNo + 1
+    const nextPageFormatted = `00${nextPageNo}`.substr(-3)
+    const nextPageId = sliceString(currentPageId, 3, 3, nextPageFormatted)
+
+    return url.replace(currentPageId, nextPageId)
   }
 
   isMoreData (url) {
@@ -127,20 +127,21 @@ class Rzeszowiak extends Scraper {
       return
     }
 
-    const relAttribute = telElement.getAttribute('rel')
-    const [oid, ssid] = relAttribute.split('|')
-    const data = { oid, ssid }
-    const headers = Object.assign(
-      {},
-      formUrlData(data), {
-        'Cookie': this.headers['set-cookie'][1].split(';')[0].trim()
-      }
-    )
-
+    const getCookie = cookie => cookie.length === 2 ? cookie[1].split(';')[0].trim() : ''
     try {
+      const relAttribute = telElement.getAttribute('rel')
+      const [oid, ssid] = relAttribute.split('|')
+      const data = { oid, ssid }
+      const headers = Object.assign(
+        {},
+        formUrlData(data), {
+          'Cookie': getCookie(this.headers['set-cookie'])
+        }
+      )
+
       const response = await fetch({ method: 'POST', url, headers, data })
       const offerId = this.getOfferId()
-      const base64 = response.data.split(',')[1]
+      const [, base64] = response.data.split(',')
       const blob = Buffer.alloc(base64.length, base64, 'base64')
 
       const fileName = `${offerId}.jpeg`
