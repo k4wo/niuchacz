@@ -12,6 +12,7 @@
       v-for="offer in offers" 
       :key="offer.id" 
       v-bind:offer="offer"
+      :deletion="deletion"
       :saveAsRead="saveAsRead"
       :saveAsFavourite="saveAsFavourite">
     </offerslot>
@@ -29,7 +30,8 @@ export default {
     removeSelected: Function,
     saveAsFavourite: Function,
     showFavourite: Function,
-    priceFilter: Function
+    priceFilter: Function,
+    deletion: Number
   },
 
   methods: {

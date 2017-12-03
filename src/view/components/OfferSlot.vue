@@ -58,7 +58,8 @@ export default {
       required: true
     },
     saveAsRead: Function,
-    saveAsFavourite: Function
+    saveAsFavourite: Function,
+    deletion: Number
   },
   computed: {
     details() {
@@ -77,6 +78,11 @@ export default {
       }
 
       return { lat: parseFloat(offer.map[0]), lng: parseFloat(offer.map[1]) };
+    }
+  },
+  watch: {
+    deletion() {
+      this.showFullDescription = false;
     }
   },
   data() {
@@ -164,6 +170,7 @@ export default {
 }
 .description {
   display: flex;
+  word-wrap: break-word;
 }
 .description > div {
   width: 50%;

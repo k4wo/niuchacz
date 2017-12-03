@@ -11,6 +11,7 @@
     </AddObserver>
     <Offers 
       v-bind:offers="offers"
+      :deletion="deletePressed"
       :saveAsRead="saveAsRead"
       :priceFilter="priceFilter"
       :showFavourite="showFavourite"
@@ -72,7 +73,13 @@ export default {
       this.changeCategory(this.selectedCategory, offers);
     },
     removeSelected() {
-      this.offers = this.offers.filter(offer => !offer.markAsRead);
+      this.deletePressed += 1;
+      const filter = offers => offers.filter(offer => !offer.markAsRead);
+
+      this.offers = filter(this.offers);
+
+      const { name } = this.selectedCategory;
+      this.allOffers[name] = filter(this.allOffers[name]);
     }
   },
   data() {
@@ -81,7 +88,8 @@ export default {
       categories: [],
       selectedCategory: {},
       allOffers: {},
-      favouriteOffers: []
+      favouriteOffers: [],
+      deletePressed: 0
     };
   },
   components: {

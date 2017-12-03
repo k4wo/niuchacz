@@ -2,7 +2,7 @@
   <li class="top-bar">
     <label class="selectAll">
       <input type="checkbox" v-model="checkAll" @change="selectAll"/>
-      <span>Na liście znajduje się {{offerCounter}} ofert.</span>
+      <span>Zaznacz wszystkie ({{offerCounter}})</span>
     </label>
 
     <div class="buttons">
