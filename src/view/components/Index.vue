@@ -101,6 +101,7 @@ export default {
     try {
       const categoriesResponse = await fetch("/niuchacz");
       const categories = await categoriesResponse.json();
+      this.categories = categories;
 
       const [selectedCategory] = categories;
       const offerUrl = `/offer/${selectedCategory.servicesId.toString()}`;
@@ -112,7 +113,6 @@ export default {
       const { offers } = await offersResponse[0].json();
       const favourites = await offersResponse[1].json();
 
-      this.categories = categories;
       this.allOffers[selectedCategory.name] = offers;
       this.favouriteOffers = favourites.offers;
       this.changeCategory(selectedCategory);
