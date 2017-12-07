@@ -10,7 +10,16 @@
       </div>
 
       <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
-      <span class="price" @click="toggleDescription">{{offer.body.cena}}</span>
+      <div class="bages">
+        <span 
+          class="badge localization" 
+          v-if="localization" 
+          @click="toggleDescription">
+  
+          {{localization}}
+          </span>
+        <span class="badge price" @click="toggleDescription">{{offer.body.cena}}</span>
+      </div>
 
       <a 
         class="icon-container link"
@@ -78,6 +87,9 @@ export default {
       }
 
       return { lat: parseFloat(offer.map[0]), lng: parseFloat(offer.map[1]) };
+    },
+    localization() {
+      return this.offer.body["polożenie"].trim();
     }
   },
   watch: {
@@ -135,14 +147,32 @@ export default {
   background: rgb(247, 247, 247);
   cursor: pointer;
 }
-.price {
-  background: #41b984;
+.details:hover {
+  background: #d8d5d5;
+}
+.bages {
+  display: flex;
+  justify-content: flex-end;
+}
+.badge {
   color: white;
   padding: 2px 5px;
   border-radius: 5px;
   font-weight: 600;
   font-size: 14px;
-  margin: 0 10px;
+  margin: 0 5px;
+  flex-shrink: 0;
+}
+.price {
+  background: #41b984;
+}
+.localization {
+  background: #2196f3;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
 }
 .link {
   color: inherit;
@@ -151,7 +181,7 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 90%;
+  width: 100%;
   margin: 0 10px;
 }
 .description-container {
@@ -190,6 +220,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 .icon-container:hover {
   background: #eaeaea;
