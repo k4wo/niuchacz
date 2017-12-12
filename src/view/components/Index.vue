@@ -105,16 +105,15 @@ export default {
 
       const [selectedCategory] = categories;
       const offerUrl = `/offer/${selectedCategory.servicesId.toString()}`;
-      const offersResponse = await Promise.all([
-        fetch(offerUrl),
-        fetch(`${offerUrl}/favourite`)
-      ]);
 
-      const { offers } = await offersResponse[0].json();
-      const favourites = await offersResponse[1].json();
-
+      const offersResponse = await fetch(offerUrl);
+      const { offers } = await offersResponse.json();
       this.allOffers[selectedCategory.name] = offers;
+
+      const favouriteOffers = await fetch(`${offerUrl}/favourite`)
+      const favourites = await favouriteOffers.json();
       this.favouriteOffers = favourites.offers;
+
       this.changeCategory(selectedCategory);
     } catch (error) {
       console.log(error);

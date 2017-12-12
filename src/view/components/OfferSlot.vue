@@ -10,15 +10,10 @@
       </div>
 
       <span class="spoiler" @click="toggleDescription">{{offer.body.description}}</span>
-      <div class="bages">
-        <span 
-          class="badge localization" 
-          v-if="localization" 
-          @click="toggleDescription">
-  
-          {{localization}}
-          </span>
-        <span class="badge price" @click="toggleDescription">{{offer.body.cena}}</span>
+      <div class="bages" @click="toggleDescription">
+        <span class="badge area" v-if="area">{{area}}</span>
+        <span class="badge localization" v-if="localization">{{localization}}</span>
+        <span class="badge price">{{offer.body.cena}}</span>
       </div>
 
       <a 
@@ -90,6 +85,9 @@ export default {
     },
     localization() {
       return this.offer.body["polożenie"].trim();
+    },
+    area() {
+      return this.offer.body["powierzchnia"].trim();
     }
   },
   watch: {
@@ -162,17 +160,21 @@ export default {
   font-size: 14px;
   margin: 0 5px;
   flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .price {
   background: #41b984;
 }
 .localization {
   background: #2196f3;
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 150px;
   text-transform: uppercase;
+}
+.area {
+  max-width: 50px;
+  background: #b256c1;
 }
 .link {
   color: inherit;
