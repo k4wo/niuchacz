@@ -19,17 +19,16 @@ const markAs = async (ctx, key, value) => {
   }
 }
 
-const mergeMarkAsValues = offers => offers.reduce((newCollection, offer) => {
-  if (!offer.marked[0]) {
+const mergeMarkAsValues = (offers, personalized) => offers.reduce((newCollection, offer) => {
+  const marked = personalized[offer._id.toString()]
+  if (!marked) {
     return [...newCollection, offer]
   }
 
-  if (offer.marked[0].markAsRead) {
+  if (marked.markAsRead) {
     return newCollection
   }
 
-  const [marked] = offer.marked
-  delete offer.marked
   const markAs = Object.keys(marked).reduce((values, key) => (
     ['_id', 'offer'].includes(key) ? values : Object.assign({}, values, { [key]: marked[key] })
   ), {})
@@ -62,11 +61,14 @@ module.exports = ({ app, middleware }) => {
     try {
       const rawOffers = await mongo('offers').aggregate([
         { $match: { serviceId: { $in: find } } },
-        { $lookup: { from: 'personalized', localField: '_id', foreignField: 'offer', as: 'marked' } },
         { $sort: { insertDate: -1 } }
       ]).toArray()
 
-      const offers = mergeMarkAsValues(rawOffers)
+      const rawPersonalized = await mongo('personalized').find({}).toArray()
+      const personalized = rawPersonalized
+        .reduce((store, item) => Object.assign(store, { [item.offer.toString()]: item }), {})
+
+      const offers = mergeMarkAsValues(rawOffers, personalized)
       ctx.body = JSON.stringify({ offers })
     } catch (error) {
       ctx.logError(error)
