@@ -2,10 +2,12 @@
   <ul>
     <top-bar
       :selectAll="selectAll"
+      :locations="locations"
       :saveAsRead="saveAsRead"
       :priceFilter="priceFilter"
       :offerCounter="offers.length"
       :showFavourite="showFavourite"
+      :locationFilter="locationFilter"
       :removeSelected="removeSelected">
     </top-bar>
     <offerslot 
@@ -26,9 +28,11 @@ import topBar from "./TopBar.vue";
 export default {
   props: {
     offers: Array,
+    locations: Array,
     saveAsRead: Function,
     removeSelected: Function,
     saveAsFavourite: Function,
+    locationFilter: Function,
     showFavourite: Function,
     priceFilter: Function,
     deletion: Number

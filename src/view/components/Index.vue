@@ -11,11 +11,13 @@
     </AddObserver>
     <Offers 
       v-bind:offers="offers"
+      v-bind:locations="locations"
       :deletion="deletePressed"
       :saveAsRead="saveAsRead"
       :priceFilter="priceFilter"
       :showFavourite="showFavourite"
       :removeSelected="removeSelected"
+      :locationFilter="locationFilter"
       :saveAsFavourite="saveAsFavourite">
     </Offers>
   </div>
@@ -32,6 +34,17 @@ export default {
       const { name } = category;
       this.selectedCategory = category;
       this.offers = offers || this.allOffers[name] || [];
+      this.setLocations();
+    },
+    setLocations() {
+      this.locations = this.offers.reduce((store, offer) => {
+        const location = offer.body["polożenie"].trim().toLowerCase();
+        if (!location || store.includes(location)) {
+          return store;
+        }
+
+        return [...store, location];
+      }, []).sort();
     },
     saveObserver(data) {
       fetch("/niuchacz/add", {
@@ -72,6 +85,16 @@ export default {
 
       this.changeCategory(this.selectedCategory, offers);
     },
+    locationFilter(locations) {
+      if (!Array.isArray(locations) || !locations.length) {
+        return this.changeCategory(this.selectedCategory);
+      }
+
+      const offers = this.offers.filter(offer =>
+        locations.includes(offer.body["polożenie"].trim().toLowerCase())
+      );
+      this.changeCategory(this.selectedCategory, offers);
+    },
     removeSelected() {
       this.deletePressed += 1;
       const filter = offers => offers.filter(offer => !offer.markAsRead);
@@ -80,6 +103,7 @@ export default {
 
       const { name } = this.selectedCategory;
       this.allOffers[name] = filter(this.allOffers[name]);
+      this.setLocations();
     }
   },
   data() {
@@ -89,7 +113,8 @@ export default {
       selectedCategory: {},
       allOffers: {},
       favouriteOffers: [],
-      deletePressed: 0
+      deletePressed: 0,
+      locations: []
     };
   },
   components: {
@@ -110,7 +135,7 @@ export default {
       const { offers } = await offersResponse.json();
       this.allOffers[selectedCategory.name] = offers;
 
-      const favouriteOffers = await fetch(`${offerUrl}/favourite`)
+      const favouriteOffers = await fetch(`${offerUrl}/favourite`);
       const favourites = await favouriteOffers.json();
       this.favouriteOffers = favourites.offers;
 

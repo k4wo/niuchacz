@@ -8,6 +8,7 @@
     <div class="buttons">
       <div><button @click="removeSelectedOffers">Usuń zaznaczone</button></div>
       <price-filter :onSave="priceFilter"></price-filter>
+      <location-filter :onSave="locationFilter" :locations="locations"></location-filter>
     </div>
 
     <label>
@@ -22,14 +23,17 @@
 
 <script>
 import priceFilter from "./PriceFilter.vue";
+import locationFilter from "./LocationFilter.vue";
 
 export default {
   props: {
+    locations: Array,
     selectAll: Function,
     offerCounter: Number,
     saveAsRead: Function,
     priceFilter: Function,
     showFavourite: Function,
+    locationFilter: Function,
     removeSelected: Function
   },
 
@@ -48,7 +52,8 @@ export default {
   },
 
   components: {
-    priceFilter
+    priceFilter,
+    locationFilter
   }
 };
 </script>
@@ -70,7 +75,7 @@ export default {
 .buttons {
   display: flex;
   justify-content: space-between;
-  width: 230px;
+  width: 370px;
 }
 </style>
 
