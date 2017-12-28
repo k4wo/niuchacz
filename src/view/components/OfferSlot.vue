@@ -13,7 +13,7 @@
       <div class="bages" @click="toggleDescription">
         <span class="badge area" v-if="area">{{area}}</span>
         <span class="badge localization" v-if="localization">{{localization}}</span>
-        <span class="badge price">{{offer.body.cena}}</span>
+        <span class="badge price">{{offer.body.cena.toLocaleString('pl-PL')}}</span>
       </div>
 
       <a 
