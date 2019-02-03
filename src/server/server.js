@@ -34,6 +34,7 @@ class KoaLa {
       await this.loadRoutes()
       await this.start()
 
+      this.watcher()
       setInterval(() => this.watcher(), 1200000)
     } catch (error) {
       this.logError(error)
@@ -61,13 +62,12 @@ class KoaLa {
     this.services = await services()(this)
 
     this.app.context.services = this.services
-    this.app.context.mongo = await this.services.mongo
   }
 
   async loadAndAssign (path, assignTo) {
     try {
       const filesList = await getDirFiles(path)
-      filesList.forEach((file) => {
+      filesList.forEach(file => {
         const loadedModule = require(file)
         const { name } = loadedModule
 
@@ -83,7 +83,9 @@ class KoaLa {
   }
 
   async start (port = 7777) {
-    this.server = this.app.listen(port, () => this.logInfo(`Server is running on ${port}`))
+    this.server = this.app.listen(port, () =>
+      this.logInfo(`Server is running on ${port}`)
+    )
   }
 
   async stop () {
@@ -91,39 +93,37 @@ class KoaLa {
   }
 
   async watcher () {
-    const { mongo, mysql, observer } = this.services
+    const { mysql, observer } = this.services
 
     try {
       const services = await mysql.select().table('services')
 
       for (const service of services) {
         const serviceId = service.id
-        const existingOffers = await mongo('offers')
-          .find({ serviceId })
-          .sort({ insertDate: -1 })
-          .limit(100)
-          .toArray()
+        const existingOffers = await mysql('offers').where({ serviceId })
         const watcher = observer(service.url, existingOffers)
         const newOffers = await watcher.observe(serviceId)
 
-        await this.insertOffers(newOffers)
+        await this.insertOffers(newOffers, existingOffers)
       }
     } catch (error) {
       this.logError(error)
     }
   }
 
-  async insertOffers (offers) {
+  async insertOffers (offers, existingOffers) {
     if (!offers.length) {
       return
     }
+    const urls = existingOffers.map(offer => offer.url)
+    const hashes = existingOffers.map(offer => offer.hash)
 
-    const mongo = this.services.mongo('offers')
     for (const offer of offers) {
-      const offerFromDb = await mongo.find({ url: offer.url }).toArray()
-      if (!offerFromDb.length) {
-        mongo.insert(offer)
+      if (urls.includes(offer.url) || hashes.includes(offer.hash)) {
+        continue
       }
+
+      await this.services.mysql('offers').insert(offer)
     }
   }
 }

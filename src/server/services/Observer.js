@@ -1,4 +1,5 @@
 const urlParser = require('url')
+const crypto = require('crypto')
 
 class Observer {
   constructor (url, existingOffersId, app) {
@@ -27,8 +28,21 @@ class Observer {
     }
   }
 
+  getHash (text) {
+    if (!text) {
+      return ''
+    }
+
+    return crypto
+      .createHash('md5')
+      .update(text)
+      .digest('hex')
+  }
+
   getNewOffers (fetchedOffersId) {
-    return fetchedOffersId.filter(offerUrl => !this.existingOffersId.includes(offerUrl))
+    return fetchedOffersId.filter(
+      offerUrl => !this.existingOffersId.includes(offerUrl)
+    )
   }
 
   async fetchOffers () {
@@ -39,7 +53,10 @@ class Observer {
     const isMoreData = scraper.isMoreData(this.currentUrl)
 
     this.newOffersId = [...this.newOffersId, ...newOffersId]
-    if (isMoreData && (!fetchedOffersId.length || fetchedOffersId.length === newOffersId.length)) {
+    if (
+      isMoreData &&
+      (!fetchedOffersId.length || fetchedOffersId.length === newOffersId.length)
+    ) {
       this.currentUrl = scraper.nextPage(this.currentUrl)
       await this.fetchOffers()
     }
@@ -47,7 +64,7 @@ class Observer {
 
   async gatherOfferDetails (serviceId) {
     const cookie = []
-    const setCookie = (headers) => {
+    const setCookie = headers => {
       headers['set-cookie'].forEach((c, i) => (cookie[i] = c))
       headers['set-cookie'] = cookie
     }
@@ -59,9 +76,9 @@ class Observer {
 
       const Scraper = this.Scraper(html, response.headers)
       const body = Scraper.buildOffer()
-      const insertDate = +new Date()
+      const hash = this.getHash(body.description)
 
-      this.newOffers.push(Object.assign({}, { body, url, serviceId, insertDate }))
+      this.newOffers.push({ body: JSON.stringify(body), url, serviceId, hash })
     }
 
     return this.newOffers
