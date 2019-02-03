@@ -119,11 +119,18 @@ class KoaLa {
     const hashes = existingOffers.map(offer => offer.hash)
 
     for (const offer of offers) {
-      if (urls.includes(offer.url) || hashes.includes(offer.hash)) {
+      if (
+        urls.includes(offer.url) ||
+        hashes.includes(offer.hash) ||
+        offer.body.cena > 500000 ||
+        parseInt(offer.body.powierzchnia) < 8 ||
+        offer.body.description.includes('roln')
+      ) {
         continue
       }
 
-      await this.services.mysql('offers').insert(offer)
+      const o = Object.assign({}, offer, { body: JSON.stringify(offer.body) })
+      await this.services.mysql('offers').insert(o)
     }
   }
 }

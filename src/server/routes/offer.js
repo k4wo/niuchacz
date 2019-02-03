@@ -21,14 +21,13 @@ module.exports = ({ app, middleware }) => {
     prefix: '/offer'
   })
 
-  router.get('/:servicesId', async ctx => {
+  router.get('/:serviceId', async ctx => {
     const { mysql } = ctx.services
-    const { servicesId } = ctx.params
+    const { serviceId } = ctx.params
 
     try {
-      const offers = await mysql()
-      .table('offers')
-      .where({ isReaded: 0, servicesId })
+      const offers = await mysql('offers')
+        .where({ isReaded: 0, serviceId })
 
       ctx.body = JSON.stringify({ offers })
     } catch (error) {
@@ -37,14 +36,13 @@ module.exports = ({ app, middleware }) => {
     }
   })
 
-  router.get('/:servicesId/favourite', async ctx => {
+  router.get('/:serviceId/favourite', async ctx => {
     const { mysql } = ctx.services
-    const { servicesId } = ctx.params
+    const { serviceId } = ctx.params
 
     try {
-      const offers = await mysql()
-        .table('offers')
-        .where({ isFavourite: 1, servicesId })
+      const offers = await mysql('offers')
+        .where({ isFavourite: 1, serviceId })
 
       ctx.body = JSON.stringify({ offers })
     } catch (error) {

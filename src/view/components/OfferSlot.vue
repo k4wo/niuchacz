@@ -106,7 +106,7 @@ export default {
     setMarkAsRead(isMarked) {
       if (!this.wasRead) {
         this.wasRead = true;
-        this.saveAsRead(this.offer._id);
+        this.saveAsRead(this.offer.id);
       }
 
       this.$set(this.offer, "markAsRead", isMarked);
@@ -116,7 +116,7 @@ export default {
     },
     toggleFavourite() {
       this.$set(this.offer, "markAsFavourite", !this.offer.markAsFavourite);
-      this.saveAsFavourite(this.offer._id, this.offer.markAsFavourite);
+      this.saveAsFavourite(this.offer.id, this.offer.markAsFavourite);
     },
     toggleDescription() {
       this.showFullDescription = !this.showFullDescription;

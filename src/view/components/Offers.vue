@@ -42,7 +42,7 @@ export default {
     selectAll() {
       this.offers.forEach(offer => {
         this.$set(offer, "markAsRead", true);
-        this.saveAsRead(offer._id);
+        this.saveAsRead(offer.id);
       });
     }
   },

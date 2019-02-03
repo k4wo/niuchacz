@@ -78,7 +78,7 @@ class Observer {
       const body = Scraper.buildOffer()
       const hash = this.getHash(body.description)
 
-      this.newOffers.push({ body: JSON.stringify(body), url, serviceId, hash })
+      this.newOffers.push({ body, url, serviceId, hash })
     }
 
     return this.newOffers

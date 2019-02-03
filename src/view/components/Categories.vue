@@ -3,8 +3,8 @@
   <div 
     class="category"
     v-for="category in categories" 
-    :key="category._id"
-    :class="{ 'selectedCategory': selectedCategory._id === category._id }"
+    :key="category.id"
+    :class="{ 'selectedCategory': selectedCategory.id === category.id }"
     @click="selectCategory(category)">
     <span>{{category.name}}</span>
   </div>

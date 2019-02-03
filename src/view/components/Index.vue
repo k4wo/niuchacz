@@ -129,11 +129,12 @@ export default {
       this.categories = categories;
 
       const [selectedCategory] = categories;
-      const offerUrl = `/offer/${selectedCategory.servicesId.toString()}`;
+      const offerUrl = `/offer/${selectedCategory.id}`;
 
       const offersResponse = await fetch(offerUrl);
       const { offers } = await offersResponse.json();
-      this.allOffers[selectedCategory.name] = offers;
+      this.allOffers[selectedCategory.name] = offers.map(item => 
+        ({...item, body: JSON.parse(item.body)}));
 
       const favouriteOffers = await fetch(`${offerUrl}/favourite`);
       const favourites = await favouriteOffers.json();
