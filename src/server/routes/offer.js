@@ -16,7 +16,7 @@ const markAs = async (ctx, key, value) => {
   }
 }
 
-module.exports = ({ app, middleware }) => {
+module.exports = ({ app }) => {
   var router = new Router({
     prefix: '/offer'
   })
@@ -59,6 +59,21 @@ module.exports = ({ app, middleware }) => {
   router.post('/markasfavourite/:offerId/remove', ctx =>
     markAs(ctx, 'isFavourite', false)
   )
+
+  router.post('/block', async ctx => {
+    const { mysql } = ctx.services
+    const { locations } = ctx.request.body
+    const sql = location => `
+      UPDATE services
+      SET settings = JSON_ARRAY_APPEND(
+        settings,
+        '$.locations',
+        "${location}"
+      )
+    `
+    await Promise.all(locations.map(l => mysql.raw(sql(l))))
+    ctx.body = 200
+  })
 
   app.use(router.routes())
   app.use(router.allowedMethods())

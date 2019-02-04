@@ -9,6 +9,7 @@
       <div><button @click="removeSelectedOffers">Usuń zaznaczone</button></div>
       <price-filter :onSave="priceFilter"></price-filter>
       <location-filter :onSave="locationFilter" :locations="locations"></location-filter>
+      <div><button @click="blockLocations">Blokuj Lokalizacje</button></div>
     </div>
 
     <label>
@@ -30,6 +31,7 @@ export default {
     locations: Array,
     selectAll: Function,
     offerCounter: Number,
+    blockLocations: Function,
     saveAsRead: Function,
     priceFilter: Function,
     showFavourite: Function,

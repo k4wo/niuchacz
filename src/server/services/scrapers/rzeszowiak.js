@@ -142,6 +142,9 @@ class Rzeszowiak extends Scraper {
       const response = await fetch({ method: 'POST', url, headers, data })
       const offerId = this.getOfferId()
       const [, base64] = response.data.split(',')
+      if (!base64) {
+        return
+      }
       const blob = Buffer.alloc(base64.length, base64, 'base64')
 
       const fileName = `${offerId}.jpeg`

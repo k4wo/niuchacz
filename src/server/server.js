@@ -104,19 +104,24 @@ class KoaLa {
         const watcher = observer(service.url, existingOffers)
         const newOffers = await watcher.observe(serviceId)
 
-        await this.insertOffers(newOffers, existingOffers)
+        await this.insertOffers(newOffers, existingOffers, serviceId)
       }
     } catch (error) {
       this.logError(error)
     }
   }
 
-  async insertOffers (offers, existingOffers) {
+  async insertOffers (offers, existingOffers, serviceId) {
     if (!offers.length) {
       return
     }
     const urls = existingOffers.map(offer => offer.url)
     const hashes = existingOffers.map(offer => offer.hash)
+    const [{ settings }] = await this.services
+      .mysql('services')
+      .where('id', serviceId)
+      .select('settings')
+    const { locations } = JSON.parse(settings)
 
     for (const offer of offers) {
       if (
@@ -124,7 +129,8 @@ class KoaLa {
         hashes.includes(offer.hash) ||
         offer.body.cena > 500000 ||
         parseInt(offer.body.powierzchnia) < 8 ||
-        offer.body.description.includes('roln')
+        offer.body.description.includes('roln') ||
+        locations.includes(offer.body.polożenie.toLowerCase())
       ) {
         continue
       }

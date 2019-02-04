@@ -3,6 +3,7 @@
     <top-bar
       :selectAll="selectAll"
       :locations="locations"
+      :blockLocations="blockLocations"
       :saveAsRead="saveAsRead"
       :priceFilter="priceFilter"
       :offerCounter="offers.length"
@@ -29,6 +30,7 @@ export default {
   props: {
     offers: Array,
     locations: Array,
+    blockLocations: Function,
     saveAsRead: Function,
     removeSelected: Function,
     saveAsFavourite: Function,

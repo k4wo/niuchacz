@@ -14,6 +14,7 @@
       v-bind:locations="locations"
       :deletion="deletePressed"
       :saveAsRead="saveAsRead"
+      :blockLocations="blockLocations"
       :priceFilter="priceFilter"
       :showFavourite="showFavourite"
       :removeSelected="removeSelected"
@@ -87,12 +88,15 @@ export default {
     },
     locationFilter(locations) {
       if (!Array.isArray(locations) || !locations.length) {
+        this.isFiltredByLocation = false;
         return this.changeCategory(this.selectedCategory);
       }
 
       const offers = this.offers.filter(offer =>
         locations.includes(offer.body["polożenie"].trim().toLowerCase())
       );
+
+      this.isFiltredByLocation = true;
       this.changeCategory(this.selectedCategory, offers);
     },
     removeSelected() {
@@ -104,6 +108,20 @@ export default {
       const { name } = this.selectedCategory;
       this.allOffers[name] = filter(this.allOffers[name]);
       this.setLocations();
+    },
+    blockLocations() {
+      if(!this.isFiltredByLocation) {
+        return
+      }
+
+      fetch("/offer/block", {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        },
+        method: "POST",
+        body: JSON.stringify({locations: this.locations})
+      });
     }
   },
   data() {
@@ -114,7 +132,8 @@ export default {
       allOffers: {},
       favouriteOffers: [],
       deletePressed: 0,
-      locations: []
+      locations: [],
+      isFiltredByLocation: false
     };
   },
   components: {
