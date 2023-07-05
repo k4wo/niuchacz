@@ -1,127 +1,127 @@
-const Koa = require('koa')
-const bodyParser = require('koa-bodyparser')
-const winston = require('winston')
+const Koa = require("koa");
+const bodyParser = require("koa-bodyparser");
+const winston = require("winston");
 
-const services = require('./services')
-const getDirFiles = require('./lib/getDirFiles')()
+const services = require("./services");
+const getDirFiles = require("./lib/getDirFiles")();
 
 class KoaLa {
-  constructor (config) {
-    this.logInfo = winston.info
-    this.logError = winston.error
-    this.config = config
-    this.setUpApp()
+  constructor(config) {
+    this.logInfo = winston.info;
+    this.logError = winston.error;
+    this.config = config;
+    this.setUpApp();
 
-    this.middleware = {}
-    this.services = {}
-    this.server = {}
+    this.middleware = {};
+    this.services = {};
+    this.server = {};
   }
 
-  setUpApp () {
-    this.app = new Koa()
-    this.app.use(bodyParser())
+  setUpApp() {
+    this.app = new Koa();
+    this.app.use(bodyParser());
 
-    this.app.context.logInfo = this.logInfo
-    this.app.context.logError = this.logError
+    this.app.context.logInfo = this.logInfo;
+    this.app.context.logError = this.logError;
   }
 
-  async init () {
-    this.logInfo('Booting...')
+  async init() {
+    this.logInfo("Booting...");
 
     try {
-      await this.loadMiddlewares()
-      await this.loadServices()
-      await this.loadRoutes()
-      await this.start()
+      await this.loadMiddlewares();
+      await this.loadServices();
+      await this.loadRoutes();
+      await this.start();
 
-      this.watcher()
-      setInterval(() => this.watcher(), 1200000)
+      this.watcher();
+      setInterval(() => this.watcher(), 1200000);
     } catch (error) {
-      this.logError(error)
+      this.logError(error);
     }
   }
 
-  async loadRoutes () {
-    this.logInfo('Loading routes...')
+  async loadRoutes() {
+    this.logInfo("Loading routes...");
 
     try {
-      const routes = await getDirFiles('../routes')
-      routes.forEach(route => require(route)(this))
+      const routes = await getDirFiles("../routes");
+      routes.forEach((route) => require(route)(this));
     } catch (error) {
-      this.logError(error)
+      this.logError(error);
     }
   }
 
-  async loadMiddlewares () {
-    this.logInfo('Loading middlewares...')
-    await this.loadAndAssign('../middlewares', this.middleware)
+  async loadMiddlewares() {
+    this.logInfo("Loading middlewares...");
+    await this.loadAndAssign("../middlewares", this.middleware);
   }
 
-  async loadServices () {
-    this.logInfo('Loading services...')
-    this.services = await services()(this)
+  async loadServices() {
+    this.logInfo("Loading services...");
+    this.services = await services()(this);
 
-    this.app.context.services = this.services
+    this.app.context.services = this.services;
   }
 
-  async loadAndAssign (path, assignTo) {
+  async loadAndAssign(path, assignTo) {
     try {
-      const filesList = await getDirFiles(path)
-      filesList.forEach(file => {
-        const loadedModule = require(file)
-        const { name } = loadedModule
+      const filesList = await getDirFiles(path);
+      filesList.forEach((file) => {
+        const loadedModule = require(file);
+        const { name } = loadedModule;
 
         if (name) {
-          assignTo[name] = loadedModule
+          assignTo[name] = loadedModule;
         } else {
-          this.logError(`Module wasn't loaded due lack of name: ${file}`)
+          this.logError(`Module wasn't loaded due lack of name: ${file}`);
         }
-      })
+      });
     } catch (error) {
-      this.logError(error)
+      this.logError(error);
     }
   }
 
-  async start (port = 7777) {
+  async start(port = 7777) {
     this.server = this.app.listen(port, () =>
       this.logInfo(`Server is running on ${port}`)
-    )
+    );
   }
 
-  async stop () {
-    this.server.close()
+  async stop() {
+    this.server.close();
   }
 
-  async watcher () {
-    const { mysql, observer } = this.services
+  async watcher() {
+    const { mysql, observer } = this.services;
 
     try {
-      const services = await mysql.select().table('services')
+      const services = await mysql.select().table("services");
 
       for (const service of services) {
-        const serviceId = service.id
-        const existingOffers = await mysql('offers').where({ serviceId })
-        const watcher = observer(service.url, existingOffers)
-        const newOffers = await watcher.observe(serviceId)
+        const serviceId = service.id;
+        const existingOffers = await mysql("offers").where({ serviceId });
+        const watcher = observer(service.url, existingOffers);
+        const newOffers = await watcher.observe(serviceId);
 
-        await this.insertOffers(newOffers, existingOffers, serviceId)
+        await this.insertOffers(newOffers, existingOffers, serviceId);
       }
     } catch (error) {
-      this.logError(error)
+      this.logError(error);
     }
   }
 
-  async insertOffers (offers, existingOffers, serviceId) {
+  async insertOffers(offers, existingOffers, serviceId) {
     if (!offers.length) {
-      return
+      return;
     }
-    const urls = existingOffers.map(offer => offer.url)
-    const hashes = existingOffers.map(offer => offer.hash)
+    const urls = existingOffers.map((offer) => offer.url);
+    const hashes = existingOffers.map((offer) => offer.hash);
     const [{ settings }] = await this.services
-      .mysql('services')
-      .where('id', serviceId)
-      .select('settings')
-    const { locations } = JSON.parse(settings)
+      .mysql("services")
+      .where("id", serviceId)
+      .select("settings");
+    const { locations } = settings;
 
     for (const offer of offers) {
       if (
@@ -129,16 +129,15 @@ class KoaLa {
         hashes.includes(offer.hash) ||
         offer.body.cena > 500000 ||
         parseInt(offer.body.powierzchnia) < 8 ||
-        offer.body.description.includes('roln') ||
-        locations.includes(offer.body.polożenie.toLowerCase())
+        (locations && locations.includes(offer.body.polożenie.toLowerCase()))
       ) {
-        continue
+        continue;
       }
 
-      const o = Object.assign({}, offer, { body: JSON.stringify(offer.body) })
-      await this.services.mysql('offers').insert(o)
+      const o = Object.assign({}, offer, { body: JSON.stringify(offer.body) });
+      await this.services.mysql("offers").insert(o);
     }
   }
 }
 
-module.exports = KoaLa
+module.exports = KoaLa;
