@@ -1,15 +1,17 @@
 <template>
   <div class="index">
-    <Categories 
-      :categories="categories" 
-      :selectedCategory="selectedCategory" 
-      @update:selectedCategory="changeCategory">
+    <Categories
+      :categories="categories"
+      :selectedCategory="selectedCategory"
+      @update:selectedCategory="changeCategory"
+    >
     </Categories>
-    <AddObserver 
+    <AddObserver
       v-bind:categoryName="selectedCategory.name"
-      :saveObserver="saveObserver">
+      :saveObserver="saveObserver"
+    >
     </AddObserver>
-    <Offers 
+    <Offers
       v-bind:offers="offers"
       v-bind:locations="locations"
       :deletion="deletePressed"
@@ -19,7 +21,8 @@
       :showFavourite="showFavourite"
       :removeSelected="removeSelected"
       :locationFilter="locationFilter"
-      :saveAsFavourite="saveAsFavourite">
+      :saveAsFavourite="saveAsFavourite"
+    >
     </Offers>
   </div>
 </template>
@@ -38,14 +41,16 @@ export default {
       this.setLocations();
     },
     setLocations() {
-      this.locations = this.offers.reduce((store, offer) => {
-        const location = offer.body["polożenie"].trim().toLowerCase();
-        if (!location || store.includes(location)) {
-          return store;
-        }
+      this.locations = this.offers
+        .reduce((store, offer) => {
+          const location = offer.body["polożenie"].trim().toLowerCase();
+          if (!location || store.includes(location)) {
+            return store;
+          }
 
-        return [...store, location];
-      }, []).sort();
+          return [...store, location];
+        }, [])
+        .sort();
     },
     saveObserver(data) {
       fetch("/niuchacz/add", {
@@ -110,8 +115,8 @@ export default {
       this.setLocations();
     },
     blockLocations() {
-      if(!this.isFiltredByLocation) {
-        return
+      if (!this.isFiltredByLocation) {
+        return;
       }
 
       fetch("/offer/block", {
@@ -120,7 +125,7 @@ export default {
           "Content-Type": "application/json"
         },
         method: "POST",
-        body: JSON.stringify({locations: this.locations})
+        body: JSON.stringify({ locations: this.locations })
       });
     }
   },
@@ -152,8 +157,10 @@ export default {
 
       const offersResponse = await fetch(offerUrl);
       const { offers } = await offersResponse.json();
-      this.allOffers[selectedCategory.name] = offers.map(item => 
-        ({...item, body: JSON.parse(item.body)}));
+      this.allOffers[selectedCategory.name] = offers.map(item => ({
+        ...item,
+        body: item.body
+      }));
 
       const favouriteOffers = await fetch(`${offerUrl}/favourite`);
       const favourites = await favouriteOffers.json();
