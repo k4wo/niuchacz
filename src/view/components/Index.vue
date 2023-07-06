@@ -34,7 +34,11 @@ import AddObserver from "./AddObserver.vue";
 
 export default {
   methods: {
-    changeCategory(category, offers) {
+    async changeCategory(category) {
+      const offers = await this.fetchOffers(category.id);
+      this.setCategory(category.id, offers);
+    },
+    setCategory(category, offers) {
       const { name } = category;
       this.selectedCategory = category;
       this.offers = offers || this.allOffers[name] || [];
@@ -72,11 +76,11 @@ export default {
     },
     showFavourite(isMarked) {
       const offers = isMarked ? this.favouriteOffers : null;
-      this.changeCategory(this.selectedCategory, offers);
+      this.setCategory(this.selectedCategory, offers);
     },
     priceFilter(price, filterType) {
       if (!price) {
-        this.changeCategory(this.selectedCategory, offers);
+        this.setCategory(this.selectedCategory, offers);
         return;
       }
 
@@ -89,12 +93,12 @@ export default {
         onFilter(offer.body.cena)
       );
 
-      this.changeCategory(this.selectedCategory, offers);
+      this.setCategory(this.selectedCategory, offers);
     },
     locationFilter(locations) {
       if (!Array.isArray(locations) || !locations.length) {
         this.isFiltredByLocation = false;
-        return this.changeCategory(this.selectedCategory);
+        return this.setCategory(this.selectedCategory);
       }
 
       const offers = this.offers.filter(offer =>
@@ -102,7 +106,7 @@ export default {
       );
 
       this.isFiltredByLocation = true;
-      this.changeCategory(this.selectedCategory, offers);
+      this.setCategory(this.selectedCategory, offers);
     },
     removeSelected() {
       this.deletePressed += 1;
@@ -127,6 +131,18 @@ export default {
         method: "POST",
         body: JSON.stringify({ locations: this.locations })
       });
+    },
+    async fetchOffers(categoryId) {
+      const offerUrl = `/offer/${categoryId}`;
+
+      const offersResponse = await fetch(offerUrl);
+      const { offers } = await offersResponse.json();
+
+      const favouriteOffers = await fetch(`${offerUrl}/favourite`);
+      const favourites = await favouriteOffers.json();
+      this.favouriteOffers = favourites.offers;
+
+      return offers;
     }
   },
   data() {
@@ -151,22 +167,11 @@ export default {
       const categoriesResponse = await fetch("/niuchacz");
       const categories = await categoriesResponse.json();
       this.categories = categories;
-
       const [selectedCategory] = categories;
-      const offerUrl = `/offer/${selectedCategory.id}`;
 
-      const offersResponse = await fetch(offerUrl);
-      const { offers } = await offersResponse.json();
-      this.allOffers[selectedCategory.name] = offers.map(item => ({
-        ...item,
-        body: item.body
-      }));
+      await this.fetchOffers(selectedCategory.id);
 
-      const favouriteOffers = await fetch(`${offerUrl}/favourite`);
-      const favourites = await favouriteOffers.json();
-      this.favouriteOffers = favourites.offers;
-
-      this.changeCategory(selectedCategory);
+      this.setCategory(selectedCategory);
     } catch (error) {
       console.log(error);
     }
