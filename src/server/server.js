@@ -46,7 +46,7 @@ class KoaLa {
 
     try {
       const routes = await getDirFiles("../routes");
-      routes.forEach((route) => require(route)(this));
+      routes.forEach(route => require(route)(this));
     } catch (error) {
       this.logError(error);
     }
@@ -67,7 +67,7 @@ class KoaLa {
   async loadAndAssign(path, assignTo) {
     try {
       const filesList = await getDirFiles(path);
-      filesList.forEach((file) => {
+      filesList.forEach(file => {
         const loadedModule = require(file);
         const { name } = loadedModule;
 
@@ -98,14 +98,16 @@ class KoaLa {
     try {
       const services = await mysql.select().table("services");
 
-      for (const service of services) {
+      const result = services.map(async service => {
         const serviceId = service.id;
         const existingOffers = await mysql("offers").where({ serviceId });
         const watcher = observer(service.url, existingOffers);
         const newOffers = await watcher.observe(serviceId);
 
-        await this.insertOffers(newOffers, existingOffers, serviceId);
-      }
+        return this.insertOffers(newOffers, existingOffers, serviceId);
+      });
+
+      await Promise.all(result);
     } catch (error) {
       this.logError(error);
     }
@@ -115,8 +117,8 @@ class KoaLa {
     if (!offers.length) {
       return;
     }
-    const urls = existingOffers.map((offer) => offer.url);
-    const hashes = existingOffers.map((offer) => offer.hash);
+    const urls = existingOffers.map(offer => offer.url);
+    const hashes = existingOffers.map(offer => offer.hash);
     const [{ settings }] = await this.services
       .mysql("services")
       .where("id", serviceId)
