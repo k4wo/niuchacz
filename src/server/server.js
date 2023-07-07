@@ -94,51 +94,52 @@ class KoaLa {
 
   async watcher() {
     const { mysql, observer } = this.services;
+    const threeMinutes = 1000 * 60 * 3;
+    const randomIntFromInterval = () => {
+      return Math.floor(Math.random() * (threeMinutes - 1000 + 1) + 1000);
+    };
 
     try {
       const services = await mysql.select().table("services");
 
-      const result = services.map(async service => {
+      services.map(async service => {
         const serviceId = service.id;
         const existingOffers = await mysql("offers").where({ serviceId });
+        const urls = existingOffers.map(offer => offer.url);
+        const hashes = existingOffers.map(offer => offer.hash);
         const watcher = observer(service.url, existingOffers);
-        const newOffers = await watcher.observe(serviceId);
 
-        return this.insertOffers(newOffers, existingOffers, serviceId);
+        const offerUrls = await watcher.observe(serviceId);
+        offerUrls.forEach(url => {
+          const delay = randomIntFromInterval();
+
+          setTimeout(async () => {
+            const offer = await watcher.fetchOffer(url, service.id);
+            await this.insertOffer(offer, existingOffers, service);
+          }, delay);
+        });
       });
-
-      await Promise.all(result);
     } catch (error) {
       this.logError(error);
     }
   }
 
-  async insertOffers(offers, existingOffers, serviceId) {
-    if (!offers.length) {
-      return;
-    }
+  async insertOffer(offer, existingOffers, service) {
     const urls = existingOffers.map(offer => offer.url);
     const hashes = existingOffers.map(offer => offer.hash);
-    const [{ settings }] = await this.services
-      .mysql("services")
-      .where("id", serviceId)
-      .select("settings");
-    const { locations } = settings;
+    const { locations } = service.settings;
 
-    for (const offer of offers) {
-      if (
-        urls.includes(offer.url) ||
-        hashes.includes(offer.hash) ||
-        offer.body.cena > 500000 ||
-        parseInt(offer.body.powierzchnia) < 8 ||
-        (locations && locations.includes(offer.body.polożenie.toLowerCase()))
-      ) {
-        continue;
-      }
-
-      const o = Object.assign({}, offer, { body: JSON.stringify(offer.body) });
-      await this.services.mysql("offers").insert(o);
+    if (
+      urls.includes(offer.url) ||
+      hashes.includes(offer.hash) ||
+      offer.body.cena > 500000 ||
+      (locations && locations.includes(offer.body.polożenie.toLowerCase()))
+    ) {
+      return;
     }
+
+    const o = Object.assign({}, offer, { body: JSON.stringify(offer.body) });
+    await this.services.mysql("offers").insert(o);
   }
 }
 
