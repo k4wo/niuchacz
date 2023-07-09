@@ -38,10 +38,10 @@ export default {
       const offers = await this.fetchOffers(category.id);
       this.setCategory(category.id, offers);
     },
-    setCategory(category, offers) {
-      const { name } = category;
+    setCategory(categoryId, offers) {
+      const category = this.categories.find(c => c.id === categoryId) || {};
       this.selectedCategory = category;
-      this.offers = offers || this.allOffers[name] || [];
+      this.offers = offers || this.allOffers[category.name] || [];
       this.setLocations();
     },
     setLocations() {
@@ -171,7 +171,7 @@ export default {
 
       await this.fetchOffers(selectedCategory.id);
 
-      this.setCategory(selectedCategory);
+      this.setCategory(selectedCategory.id);
     } catch (error) {
       console.log(error);
     }
